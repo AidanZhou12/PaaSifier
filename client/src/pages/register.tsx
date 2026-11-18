@@ -5,7 +5,7 @@ import './pages.css'
 function Register() {
     return (
         <main>
-            <h1>Register</h1>
+            <h1>Start deploying with us</h1>
         </main>
     );
 }
