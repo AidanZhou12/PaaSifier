@@ -5,7 +5,7 @@ class UserBase(BaseModel):
     username: str
 
 class UserCreate(UserBase):
-    password_hash: str
+    password: str
 
 class UserResponse(UserBase):
     id: int
