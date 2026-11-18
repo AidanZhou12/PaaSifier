@@ -9,7 +9,7 @@ import hmac
 
 router = APIRouter()
 
-@router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/create", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def create_user(user: UserCreate, db: Annotated[Session, Depends(get_db)]):
     account = db.execute(select(models.User).where(models.User.username == username)).scalar_one_or_none()
     if account:
