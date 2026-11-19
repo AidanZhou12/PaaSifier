@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:18
+    container_name: psfr-postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: psfr
+    ports:
+      - "5432:5432"
+    volumes:
+      - psfr_postgres_data:/var/lib/postgresql
+
+volumes:
+  psfr_postgres_data:

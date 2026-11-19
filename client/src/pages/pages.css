@@ -1,0 +1,82 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.navbar span {
+  margin-right: auto;
+  color: var(--text-h);
+  font-weight: 700;
+}
+
+.navbar .action-button {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #000;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.navbar .action-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.form-field label {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.form-field input {
+  width: 300px;
+  box-sizing: border-box;
+}
+
+.registration-page {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+}
+
+.registration-form button {
+  width: 300px;
+  padding: 8px 0;
+  margin-top: 16px;
+  background: #000;
+  color: #fff;
+  border: 1px solid #000;
+}
+
+.registration-page > a {
+  display: inline-block;
+  margin-top: 16px;
+}
+
+.login-page {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+}
+
+.login-form button {
+  width: 300px;
+  padding: 8px 0;
+  margin-top: 16px;
+  background: #000;
+  color: #fff;
+  border: 1px solid #000;
+}
+
+.login-page > a {
+  display: inline-block;
+  margin-top: 16px;
+}
