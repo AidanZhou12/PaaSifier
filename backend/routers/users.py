@@ -4,13 +4,14 @@ from sqlalchemy.orm import Session
 from database import get_db
 import models
 from typing import Annotated
-from schemas import UserBase, UserCreate, UserResponse
+from schemas import UserBase, UserCreate, UserResponse, TokenResponse
+from auth import create_access_token, get_current_user
 import hashlib
 import hmac
 
 router = APIRouter()
 
-@router.post("/create", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/create", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 def create_user(user: UserCreate, db: Annotated[Session, Depends(get_db)]):
     account = db.execute(select(models.User).where(models.User.username == user.username)).scalar_one_or_none()
     if account:
@@ -24,9 +25,9 @@ def create_user(user: UserCreate, db: Annotated[Session, Depends(get_db)]):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return new_user
+    return TokenResponse(access_token=create_access_token(new_user.id), user=UserResponse.model_validate(new_user))
 
-@router.post("/login", response_model=UserResponse)
+@router.post("/login", response_model=TokenResponse)
 def login(creds: UserCreate, db: Annotated[Session, Depends(get_db)]):
     account = db.execute(select(models.User).where(models.User.username == creds.username)).scalar_one_or_none()
     if not account:
@@ -34,6 +35,11 @@ def login(creds: UserCreate, db: Annotated[Session, Depends(get_db)]):
     data = creds.password.encode("utf-8")
     hash_result = hashlib.sha256(data).hexdigest()
     if hmac.compare_digest(account.password_hash, hash_result):
-        return account
+        return TokenResponse(access_token=create_access_token(account.id), user=UserResponse.model_validate(account))
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
+
+
+@router.get("/me", response_model=UserResponse)
+def read_current_user(user: Annotated[models.User, Depends(get_current_user)]):
+    return user

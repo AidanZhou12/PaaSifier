@@ -19,9 +19,10 @@ function Register() {
                     try {
                         if (password1 !== password2) {
                             setError('Passwords do not match');
+                            return;
                         }
-                        const user = await createUser({ username, password: password1 });
-                        navigate('/dashboard', { state: user });
+                        await createUser({ username, password: password1 });
+                        navigate('/dashboard');
                     }
                     catch (err) {
                         setError(err instanceof ApiError ? err.message : 'Something went wrong');
