@@ -20,32 +20,25 @@ export class ApiError extends Error {
     }
 }
 
-export async function createUser({ username, password }: UserCreate): Promise<UserResponse> {
-    const response = await fetch(`${API_URL}/users/create`, {
+async function postJson<T>(path: string, body: unknown, fallbackError: string): Promise<T> {
+    const response = await fetch(`${API_URL}${path}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify(body),
     });
     if (!response.ok) {
         const errorData: { detail?: string } = await response.json().catch(() => ({}));
-        throw new ApiError(errorData.detail || 'Failed to create account', response.status);
+        throw new ApiError(errorData.detail || fallbackError, response.status);
     }
     return response.json();
 }
 
-export async function login({ username, password }: UserCreate): Promise<UserResponse> {
-    const response = await fetch(`${API_URL}/users/login`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-    });
-    if (!response.ok) {
-        const errorData: { detail?: string } = await response.json().catch(() => ({}));
-        throw new ApiError(errorData.detail || 'Failed to create account', response.status);
-    }
-    return response.json();
+export function createUser(data: UserCreate): Promise<UserResponse> {
+    return postJson<UserResponse>('/users/create', data, 'Failed to create account');
+}
+
+export function login(data: UserCreate): Promise<UserResponse> {
+    return postJson<UserResponse>('/users/login', data, 'Failed to log in');
 }
