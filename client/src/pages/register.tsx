@@ -1,14 +1,13 @@
-import {Link, useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
 import { useState } from 'react'
 import './pages.css'
-import { createUser, login, ApiError } from '../api/users'
+import { createUser, ApiError } from '../api/users'
 
 function Register() {
     const [username, setUsername] = useState('');
     const [password1, setPassword1] = useState('');
     const [password2, setPassword2] = useState('');
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     return (
         <main>
@@ -21,11 +20,11 @@ function Register() {
                         if (password1 !== password2) {
                             setError('Passwords do not match');
                         }
-                        await createUser(username, password1);
+                        await createUser({ username, password: password1 });
                         navigate('/dashboard', { state: { username } });
                     }
                     catch (err) {
-                        setError(err.message);
+                        setError(err instanceof ApiError ? err.message : 'Something went wrong');
                     }
                 }}>
                     <div className="form-field">
@@ -37,13 +36,13 @@ function Register() {
                     <div className="form-field">
                         <label>
                             Password:
-                            <input type="text" value={password1} onChange={(e) => setPassword1(e.target.value)} required />
+                            <input type="password" value={password1} onChange={(e) => setPassword1(e.target.value)} required />
                         </label>
                     </div>
                     <div className="form-field">
                         <label>
                             Confirm Password:
-                            <input type="text" value={password2} onChange={(e) => setPassword2(e.target.value)} required />
+                            <input type="password" value={password2} onChange={(e) => setPassword2(e.target.value)} required />
                         </label>
                     </div>
                     {error && <p className="error">{error}</p>}
