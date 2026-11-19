@@ -13,6 +13,43 @@ function Register() {
     return (
         <main>
             <h1>Start deploying with us</h1>
+            <div className="registration-page">
+                <form className="registration-form" onSubmit={async (e) => {
+                    e.preventDefault();
+                    setError('');
+                    try {
+                        if (password1 !== password2) {
+                            setError('Passwords do not match');
+                        }
+                        await createUser(username, password1);
+                        navigate('/dashboard', { state: { username } });
+                    }
+                    catch (err) {
+                        setError(err.message);
+                    }
+                }}>
+                    <div className="form-field">
+                        <label>
+                            Username:
+                            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
+                        </label>
+                    </div>
+                    <div className="form-field">
+                        <label>
+                            Password:
+                            <input type="text" value={password1} onChange={(e) => setPassword1(e.target.value)} required />
+                        </label>
+                    </div>
+                    <div className="form-field">
+                        <label>
+                            Confirm Password:
+                            <input type="text" value={password2} onChange={(e) => setPassword2(e.target.value)} required />
+                        </label>
+                    </div>
+                    {error && <p className="error">{error}</p>}
+                    <button type="submit">Create Account</button>
+                </form>
+            </div>
         </main>
     );
 }
