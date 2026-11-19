@@ -16,8 +16,8 @@ function Login() {
                     e.preventDefault();
                     setError('');
                     try {
-                        await login({username, password});
-                        navigate('/dashboard', { state: { username } });
+                        const user = await login({username, password});
+                        navigate('/dashboard', { state: user });
                     }
                     catch (err) {
                         setError(err instanceof ApiError ? err.message: "Something went wrong");
