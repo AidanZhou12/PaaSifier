@@ -34,3 +34,18 @@ export async function createUser({ username, password }: UserCreate): Promise<Us
     }
     return response.json();
 }
+
+export async function login({ username, password }: UserCreate): Promise<UserResponse> {
+    const response = await fetch(`${API_URL}/users/login`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+    });
+    if (!response.ok) {
+        const errorData: { detail?: string } = await response.json().catch(() => ({}));
+        throw new ApiError(errorData.detail || 'Failed to create account', response.status);
+    }
+    return response.json();
+}
