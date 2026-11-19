@@ -39,7 +39,6 @@
   box-sizing: border-box;
 }
 
-/* Places the top of the form (the "Username" label) at the vertical middle of the page */
 .registration-page {
   position: absolute;
   top: 50%;
@@ -57,6 +56,27 @@
 }
 
 .registration-page > a {
+  display: inline-block;
+  margin-top: 16px;
+}
+
+.login-page {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+}
+
+.login-form button {
+  width: 300px;
+  padding: 8px 0;
+  margin-top: 16px;
+  background: #000;
+  color: #fff;
+  border: 1px solid #000;
+}
+
+.login-page > a {
   display: inline-block;
   margin-top: 16px;
 }
