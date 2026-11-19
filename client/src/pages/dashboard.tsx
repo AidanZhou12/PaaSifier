@@ -11,8 +11,7 @@ function Dashboard() {
         getCurrentUser()
             .then(setUser)
             .catch(() => {
-                // No token, or it's expired/invalid: clear it and send the user to log in
-                logout();
+                // Not logged in, or the session has ended (the refresh cookie was rejected)
                 navigate('/login', { replace: true });
             });
     }, [navigate]);
@@ -25,8 +24,8 @@ function Dashboard() {
         <main>
             <h1>Dashboard</h1>
             <p>Signed in as {user.username}</p>
-            <button onClick={() => {
-                logout();
+            <button onClick={async () => {
+                await logout();
                 navigate('/login');
             }}>Log out</button>
         </main>
