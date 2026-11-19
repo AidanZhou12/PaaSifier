@@ -10,6 +10,47 @@ services:
       - "5432:5432"
     volumes:
       - psfr_postgres_data:/var/lib/postgresql
+    # Lets the backend wait until Postgres is actually accepting connections
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d psfr"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  backend:
+    build: ./backend
+    container_name: psfr-backend
+    # Apply any pending migrations, then start the API with auto-reload
+    command: sh -c "alembic upgrade head && fastapi dev main.py --host 0.0.0.0 --port 8000"
+    # JWT_SECRET, IBM Cloud settings, etc. (not baked into the image)
+    env_file: ./backend/.env
+    environment:
+      # Overrides the localhost URL in backend/.env: inside Docker, the database is reached by its service name
+      DATABASE_URL: postgresql+psycopg://admin:admin@db:5432/psfr
+    ports:
+      - "8000:8000"
+    volumes:
+      # Live code reloading: edits on your machine show up in the container
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+  client:
+    build: ./client
+    container_name: psfr-client
+    environment:
+      # The browser (on your machine) calls the API, so this stays localhost, not "backend"
+      VITE_API_URL: http://localhost:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      # Live code reloading
+      - ./client:/app
+      # Keeps the container's own node_modules instead of the one from your machine
+      - /app/node_modules
+    depends_on:
+      - backend
 
 volumes:
   psfr_postgres_data:
