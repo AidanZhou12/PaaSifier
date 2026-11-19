@@ -55,3 +55,8 @@
   color: #fff;
   border: 1px solid #000;
 }
+
+.registration-page > a {
+  display: inline-block;
+  margin-top: 16px;
+}

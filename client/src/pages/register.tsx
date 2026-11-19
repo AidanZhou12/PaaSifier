@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { useState } from 'react'
 import './pages.css'
 import { createUser, ApiError } from '../api/users'
@@ -48,6 +48,7 @@ function Register() {
                     {error && <p className="error">{error}</p>}
                     <button type="submit">Create Account</button>
                 </form>
+                <Link to="/login">Already have an account?</Link>
             </div>
         </main>
     );
