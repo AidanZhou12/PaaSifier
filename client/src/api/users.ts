@@ -89,8 +89,12 @@ export async function request<T>(
     }
 
     if (!response.ok) {
-        const errorData: { detail?: string } = await response.json().catch(() => ({}));
-        throw new ApiError(errorData.detail || fallbackError, response.status);
+        const errorData: { detail?: string | { msg: string }[] } = await response.json().catch(() => ({}));
+        // HTTPException sends detail as a string; request validation errors (422) send a list of problems
+        const message = typeof errorData.detail === 'string'
+            ? errorData.detail
+            : errorData.detail?.[0]?.msg;
+        throw new ApiError(message || fallbackError, response.status);
     }
     if (response.status === 204) {
         return undefined as T;
