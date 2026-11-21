@@ -24,3 +24,7 @@ def ibm_headers() -> dict[str, str]:
         "Authorization": f"Bearer {token_manager.get_token()}",
         "Content-Type": "application/json",
     }
+
+# Optional: the resource group new Code Engine projects are created in.
+# If it isn't set, IBM uses the account's default resource group.
+IBM_CLOUD_RESOURCE_GROUP_ID = os.getenv("IBM_CLOUD_RESOURCE_GROUP_ID")

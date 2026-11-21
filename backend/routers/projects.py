@@ -6,37 +6,58 @@ import models
 from typing import Annotated
 from schemas import ProjectBase, ProjectCreate, ProjectResponse
 from auth import get_current_user
-from ibm_cloud import IBM_CLOUD_API_URL, ibm_headers
+from ibm_cloud import IBM_CLOUD_API_URL, IBM_CLOUD_RESOURCE_GROUP_ID, ibm_headers
+from datetime import datetime
 import requests
 import os
 
 router = APIRouter()
 
 @router.post("/create", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
-def create_project(proj: ProjectCreate, db: Annotated[Session, Depends(get_db)]):
-    creator = db.execute(select(models.User).where(models.User.id == proj.user_id)).scalar_one_or_none()
-    if not creator:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such user")
+def create_project(
+    proj: ProjectCreate,
+    user: Annotated[models.User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    # Project names are unique across the whole IBM account, so check before calling IBM
+    existing = db.execute(select(models.Project).where(models.Project.name == proj.name)).scalar_one_or_none()
+    if existing:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="That project name is taken")
+
     body = {
-        name: proj.name,
-        resource_group_id: os.getenv(IBM_CLOUD_RESOURCE_GROUP_ID),
-        tags: proj.username
+        "name": proj.name,
+        "tags": [user.username],
     }
-    response = requests.post(IBM_CLOUD_API_URL + "/projects", headers=ibm_headers, body=body)
-    if response.status_code = 202:
-        data = response.json()
-        with SessionLocal() as session:
-            new_project = models.Project(
-                user_id=proj.user_id,
-                name=proj.name,
-                created_at=data["created_at"],
-                crn=data["crn"],
-                href=data["href"],
-                ibm_id=data["id"],
-                status=data["status"]
-            )
-            session.add(new_project)
-            session.commit()
-           return new_project
-    else:
-        raise HTTPException(status_code=response.status_code)
+    if IBM_CLOUD_RESOURCE_GROUP_ID:
+        body["resource_group_id"] = IBM_CLOUD_RESOURCE_GROUP_ID
+
+    try:
+        response = requests.post(f"{IBM_CLOUD_API_URL}/projects", headers=ibm_headers(), json=body, timeout=30)
+    except requests.RequestException:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Could not reach IBM Cloud")
+
+    if response.status_code != status.HTTP_202_ACCEPTED:
+        # Pass on IBM's message for problems with the user's input; anything else is our problem, not theirs.
+        # Never forward IBM's status code as-is: a 401 from IBM would make the frontend think the user's session expired.
+        if response.status_code in (status.HTTP_400_BAD_REQUEST, status.HTTP_409_CONFLICT):
+            try:
+                message = response.json()["errors"][0]["message"]
+            except (ValueError, KeyError, IndexError, TypeError):
+                message = "IBM Cloud rejected the project"
+            raise HTTPException(status_code=response.status_code, detail=message)
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="IBM Cloud could not create the project")
+
+    data = response.json()
+    new_project = models.Project(
+        user_id=user.id,
+        name=proj.name,
+        created_at=datetime.fromisoformat(data["created_at"]),
+        crn=data["crn"],
+        href=data["href"],
+        ibm_id=data["id"],
+        status=data["status"],
+    )
+    db.add(new_project)
+    db.commit()
+    db.refresh(new_project)
+    return new_project
