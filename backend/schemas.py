@@ -27,4 +27,9 @@ class ProjectCreate(ProjectBase):
 
 class ProjectResponse(ProjectBase):
     model_config = ConfigDict(from_attributes=True)
+
     id: int
+    crn: str
+    href: str
+    ibm_id: str
+    status: str

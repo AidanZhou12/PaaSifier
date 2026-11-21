@@ -31,3 +31,8 @@ class Project(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    crn: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    href: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    ibm_id: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False)
