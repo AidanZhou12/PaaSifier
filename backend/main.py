@@ -27,3 +27,4 @@ app.add_middleware(
 )
 
 app.include_router(users.router, prefix="/users", tags=["users"])
+app.include_router(projects.router,prefix="/projects", tags=["projects"])
