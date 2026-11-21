@@ -17,3 +17,13 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
+
+class ProjectBase(BaseModel):
+    user_id: int
+    name: str
+
+class ProjectCreate(ProjectBase):
+    username: str
+
+class ProjectResponse(ProjectCreate):
+    id: int
