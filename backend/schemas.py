@@ -25,5 +25,6 @@ class ProjectBase(BaseModel):
 class ProjectCreate(ProjectBase):
     username: str
 
-class ProjectResponse(ProjectCreate):
+class ProjectResponse(ProjectBase):
+    model_config = ConfigDict(from_attributes=True)
     id: int
