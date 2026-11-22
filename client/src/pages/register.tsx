@@ -30,19 +30,19 @@ function Register() {
                 }}>
                     <div className="form-field">
                         <label>
-                            Username:
+                            Username
                             <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
                         </label>
                     </div>
                     <div className="form-field">
                         <label>
-                            Password:
+                            Password
                             <input type="password" value={password1} onChange={(e) => setPassword1(e.target.value)} required />
                         </label>
                     </div>
                     <div className="form-field">
                         <label>
-                            Confirm Password:
+                            Confirm Password
                             <input type="password" value={password2} onChange={(e) => setPassword2(e.target.value)} required />
                         </label>
                     </div>

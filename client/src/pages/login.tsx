@@ -25,13 +25,13 @@ function Login() {
                 }}>
                     <div className="form-field">
                         <label>
-                            Username:
+                            Username
                             <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
                         </label>
                     </div>
                     <div className="form-field">
                         <label>
-                            Password:
+                            Password
                             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                         </label>
                     </div>

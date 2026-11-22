@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 import models
 from typing import Annotated
-from schemas import UserBase, UserCreate, UserResponse, TokenResponse
+from schemas import UserBase, UserCreate, UserLogin, UserResponse, TokenResponse
 from auth import (
     REFRESH_COOKIE_NAME,
     clear_refresh_cookie,
@@ -46,7 +46,7 @@ def create_user(user: UserCreate, response: Response, db: Annotated[Session, Dep
     return _login_response(db, response, new_user)
 
 @router.post("/login", response_model=TokenResponse)
-def login(creds: UserCreate, response: Response, db: Annotated[Session, Depends(get_db)]):
+def login(creds: UserLogin, response: Response, db: Annotated[Session, Depends(get_db)]):
     account = db.execute(select(models.User).where(models.User.username == creds.username)).scalar_one_or_none()
     if not account:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="That username does not exist")
