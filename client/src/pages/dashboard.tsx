@@ -1,14 +1,17 @@
 import { useNavigate } from 'react-router'
 import './pages.css'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { getCurrentUser, logout, type UserResponse, ApiError } from '../api/users'
-import { getProjects, type ProjectResponse } from '../api/projects'
+import { createProject, getProjects, type ProjectResponse } from '../api/projects'
 
 function Dashboard() {
     const [user, setUser] = useState<UserResponse | null>(null);
     const [error, setError] = useState('');
     const [projects, setProjects] = useState<ProjectResponse[]>([]);
+    const [newProjectName, setNewProjectName] = useState('');
     const navigate = useNavigate();
+    // Points at the <dialog> element so the button can open it
+    const createDialogRef = useRef<HTMLDialogElement>(null);
 
     useEffect(() => {
         getCurrentUser()
@@ -43,7 +46,42 @@ function Dashboard() {
                     <h2>{project.name}</h2>
                 </div>)}
             </section>
-            <button onClick={() => {console.log("A pop-up will be here");}}>Create project</button>
+            <button onClick={() => createDialogRef.current?.showModal()}>Create project</button>
+            {/* Opens centered on top of the page. Closes with Escape or by clicking the dimmed background. */}
+            <dialog
+                ref={createDialogRef}
+                className="modal"
+                onClick={(e) => {
+                    // e.target is the <dialog> itself only when the click lands outside .modal-content
+                    if (e.target === e.currentTarget) {
+                        createDialogRef.current?.close();
+                    }
+                }}
+            >
+                <div className="modal-content">
+                    <h2>Create a project</h2>
+                    <form className="create-form" onSubmit={async (e) => {
+                        e.preventDefault();
+                        setError('');
+                        try {
+                            await createProject(newProjectName);
+                        }
+                        catch (err) {
+                            setError(err instanceof ApiError ? err.message: "Something went wrong");
+                        }
+                    }}>
+                        <div className="project-name-input">
+                            <label>
+                                Project name:
+                                <input type="text" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} required />
+                            </label>
+                        </div>
+                        {error && <p className="error">{error}</p>}
+                        <button onClick={() => createDialogRef.current?.close()}>Cancel</button>
+                        <button type="submit">Create</button>
+                    </form>
+                </div>
+            </dialog>
         </main>
     );
 }

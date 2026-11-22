@@ -99,3 +99,24 @@
   display: inline-block;
   margin-top: 16px;
 }
+
+/* Create project pop-up (a native <dialog>, centered by the browser when opened with showModal()) */
+.modal {
+  width: min(500px, 90vw);
+  padding: 0;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+/* The dimmed layer behind the pop-up */
+.modal::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Fills the dialog, so clicks inside it don't count as clicks on the background */
+.modal-content {
+  min-height: 300px;
+  padding: 24px;
+}
