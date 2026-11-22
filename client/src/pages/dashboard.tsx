@@ -10,6 +10,8 @@ function Dashboard() {
     const [projects, setProjects] = useState<ProjectResponse[]>([]);
     const [loading, setLoading] = useState(false);
     const [newProjectName, setNewProjectName] = useState('');
+    // Errors from the create form, kept separate from page errors like a failed project load
+    const [createError, setCreateError] = useState('');
     const navigate = useNavigate();
     // Points at the <dialog> element so the button can open it
     const createDialogRef = useRef<HTMLDialogElement>(null);
@@ -47,14 +49,26 @@ function Dashboard() {
                     <h2>{project.name}</h2>
                 </div>)}
             </section>
-            <button onClick={() => createDialogRef.current?.showModal()}>Create project</button>
-            {/* Opens centered on top of the page. Closes with Escape or by clicking the dimmed background. */}
+            <button onClick={() => {
+                // Start fresh every time: no leftover error or name from the last attempt
+                setCreateError('');
+                setNewProjectName('');
+                createDialogRef.current?.showModal();
+            }}>Create project</button>
+            {/* Opens centered on top of the page. Closes with Escape, Cancel, or clicking the dimmed background,
+                but not while a project is being created. */}
             <dialog
                 ref={createDialogRef}
                 className="modal"
+                onCancel={(e) => {
+                    // Fired when Escape is pressed
+                    if (loading) {
+                        e.preventDefault();
+                    }
+                }}
                 onClick={(e) => {
                     // e.target is the <dialog> itself only when the click lands outside .modal-content
-                    if (e.target === e.currentTarget) {
+                    if (e.target === e.currentTarget && !loading) {
                         createDialogRef.current?.close();
                     }
                 }}
@@ -63,29 +77,31 @@ function Dashboard() {
                     <h2>Create a project</h2>
                     <form className="create-form" onSubmit={async (e) => {
                         e.preventDefault();
-                        setError('');
+                        setCreateError('');
                         setLoading(true);
                         try {
                             const proj = await createProject(newProjectName);
                             setProjects((current) => [proj, ...current]);
                             setNewProjectName('');
                             createDialogRef.current?.close();
-                            setLoading(false);
                         }
                         catch (err) {
+                            setCreateError(err instanceof ApiError ? err.message : "Something went wrong");
+                        }
+                        finally {
+                            // Runs after success or failure
                             setLoading(false);
-                            setError(err instanceof ApiError ? err.message: "Something went wrong");
                         }
                     }}>
                         <div className="project-name-input">
                             <label>
                                 Project name
-                                <input type="text" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} required />
+                                <input type="text" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} maxLength={50} required />
                             </label>
                         </div>
-                        {error && <p className="error">{error}</p>}
+                        {createError && <p className="error">{createError}</p>}
                         {loading && <p>Creating...</p>}
-                        <button type="button" onClick={() => createDialogRef.current?.close()}>Cancel</button>
+                        <button type="button" disabled={loading} onClick={() => createDialogRef.current?.close()}>Cancel</button>
                         <button type="submit" disabled={loading}>Create</button>
                     </form>
                 </div>
