@@ -1,0 +1,16 @@
+import { request } from './users'
+
+export interface ProjectResponse {
+    id: number;
+    name: string;
+    crn: string;
+    href: string;
+    ibm_id: string;
+    status: string;
+}
+
+// Calls GET /projects (get_projects in backend/routers/projects.py).
+// request() adds the access token, and refreshes it and retries once if it has expired.
+export function getProjects(): Promise<ProjectResponse[]> {
+    return request<ProjectResponse[]>('GET', '/projects', undefined, 'Failed to load projects');
+}
