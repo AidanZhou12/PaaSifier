@@ -74,3 +74,34 @@ def get_projects(
         .order_by(models.Project.created_at.desc(), models.Project.id.desc())
     ).scalars().all()
     return projects
+
+@router.delete("/{project_id}", status_code=HTTP_204_NO_CONTENT)
+def delete_project(
+    project_id: int,
+    user: Annotated[models.User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)]
+):
+    project = db.execute(
+        select(models.Project)
+        .where(models.Project.id == project_id)
+    ).scalar_one_or_none()
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+    try:
+        response = requests.post(f"{IBM_CLOUD_API_URL}/{project.ibm_id}", headers=ibm_headers(), timeout=30)
+    except requests.RequestException:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Could not reach IBM Cloud")
+    
+    if response.status_code != status.HTTP_202_ACCEPTED:
+        if response.status_code in (status.HTTP_400_BAD_REQUEST, status.HTTP_409_CONFLICT):
+            try:
+                message = response.json()["errors"][0]["message"]
+            except (ValueError, KeyError, IndexError, TypeError):
+                message = "IBM Cloud rejected deletion"
+            raise HTTPException(status_code=response.status_code, detail=message)
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="IBM Cloud could not delete the project")
+
+    db.delete(project)
+    db.commit()
+    
