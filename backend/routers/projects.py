@@ -8,10 +8,12 @@ from schemas import ProjectBase, ProjectCreate, ProjectResponse
 from auth import get_current_user
 from ibm_cloud import IBM_CLOUD_API_URL, IBM_CLOUD_RESOURCE_GROUP_ID, ibm_headers
 from datetime import datetime
+import logging
 import requests
 import os
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 @router.post("/create", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
 def create_project(
@@ -118,5 +120,37 @@ def get_project(
     ).scalar_one_or_none()
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+    # Refresh the status from IBM (e.g. "creating" -> "active"). If IBM can't be reached or
+    # returns an error, fall back to the saved data instead of failing the page.
+    try:
+        response = requests.get(
+            f"{IBM_CLOUD_API_URL}/projects/{project.ibm_id}",
+            headers=ibm_headers(),
+            timeout=5,  # short: the user is waiting for the page to load
+        )
+    except requests.RequestException:
+        logger.warning("Could not reach IBM Cloud to refresh project %s", project.id)
+        return project
+
+    if response.status_code == status.HTTP_200_OK:
+        try:
+            new_status = response.json().get("status")
+        except ValueError:
+            new_status = None
+        if isinstance(new_status, str) and new_status and new_status != project.status:
+            project.status = new_status
+            db.commit()
+            db.refresh(project)
+    elif response.status_code == status.HTTP_404_NOT_FOUND:
+        # Gone from IBM (e.g. deleted in the IBM console). Keep our row so the user can see
+        # what happened; the delete route already treats an IBM 404 as success.
+        if project.status != "not_found":
+            project.status = "not_found"
+            db.commit()
+            db.refresh(project)
+    else:
+        logger.warning("IBM Cloud returned %s when refreshing project %s", response.status_code, project.id)
+
     return project
     
