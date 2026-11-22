@@ -46,10 +46,13 @@
 }
 
 .navbar button.navbar-path {
-  margin-right: auto;
   inline-size: auto;
   background: #fff;
   color: #000;
+}
+
+.navbar .navbar-path + button:not(.navbar-path) {
+  margin-inline-start: auto;
 }
 
 .navbar:has(> button) + h1 {
@@ -88,8 +91,11 @@
 
 .project-page > button.project {
   appearance: none;
-  border-style: dotted;
   cursor: pointer;
+}
+
+.project-page > .create-project {
+  border-style: dotted;
 }
 
 .form-field label {

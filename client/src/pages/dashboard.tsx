@@ -49,7 +49,7 @@ function Dashboard() {
                 <button className="project" onClick={() => navigate('/project', { state: { project } })} key={project.id}>
                     <h2>{project.name}</h2>
                 </button>)}
-                <button className="project" type="button" onClick={() => {
+                <button className="project create-project" type="button" onClick={() => {
                     // Start fresh every time: no leftover error or name from the last attempt
                     setCreateError('');
                     setNewProjectName('');
