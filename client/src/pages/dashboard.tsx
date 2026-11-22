@@ -8,6 +8,7 @@ function Dashboard() {
     const [user, setUser] = useState<UserResponse | null>(null);
     const [error, setError] = useState('');
     const [projects, setProjects] = useState<ProjectResponse[]>([]);
+    const [loading, setLoading] = useState(false);
     const [newProjectName, setNewProjectName] = useState('');
     const navigate = useNavigate();
     // Points at the <dialog> element so the button can open it
@@ -63,13 +64,16 @@ function Dashboard() {
                     <form className="create-form" onSubmit={async (e) => {
                         e.preventDefault();
                         setError('');
+                        setLoading(true);
                         try {
                             const proj = await createProject(newProjectName);
                             setProjects((current) => [proj, ...current]);
                             setNewProjectName('');
                             createDialogRef.current?.close();
+                            setLoading(false);
                         }
                         catch (err) {
+                            setLoading(false);
                             setError(err instanceof ApiError ? err.message: "Something went wrong");
                         }
                     }}>
@@ -80,8 +84,9 @@ function Dashboard() {
                             </label>
                         </div>
                         {error && <p className="error">{error}</p>}
-                        <button onClick={() => createDialogRef.current?.close()}>Cancel</button>
-                        <button type="submit">Create</button>
+                        {loading && <p>Creating...</p>}
+                        <button type="button" onClick={() => createDialogRef.current?.close()}>Cancel</button>
+                        <button type="submit" disabled={loading}>Create</button>
                     </form>
                 </div>
             </dialog>
