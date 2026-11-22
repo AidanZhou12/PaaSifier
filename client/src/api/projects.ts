@@ -18,3 +18,7 @@ export function getProjects(): Promise<ProjectResponse[]> {
 export function createProject(name: string): Promise<ProjectResponse> {
     return request<ProjectResponse>('POST', '/projects/create', { name }, 'Failed to create project');
 }
+
+export function deleteProject(id: number): Promise<void> {
+    return request('DELETE', `/projects/${id}`, undefined, 'Failed to delete project');
+}
