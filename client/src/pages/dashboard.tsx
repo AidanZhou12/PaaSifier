@@ -46,9 +46,9 @@ function Dashboard() {
             {error && <p className="error">{error}</p>}
             <section className="project-page">
                 {projects.map((project) => 
-                <div className="project" key={project.id}>
+                <button className="project" onClick={() => navigate('/project', { state: { project } })} key={project.id}>
                     <h2>{project.name}</h2>
-                </div>)}
+                </button>)}
                 <button className="project" type="button" onClick={() => {
                     // Start fresh every time: no leftover error or name from the last attempt
                     setCreateError('');
