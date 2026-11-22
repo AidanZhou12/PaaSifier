@@ -105,4 +105,18 @@ def delete_project(
 
     db.delete(project)
     db.commit()
+
+@router.get("/{project_id}", response_model=ProjectResponse)
+def get_project(
+    project_id: int,
+    user: Annotated[models.User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    project = db.execute(
+        select(models.Project)
+        .where(models.Project.id == project_id, models.Project.user_id == user.id)
+    ).scalar_one_or_none()
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+    return project
     
