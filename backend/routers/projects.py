@@ -61,3 +61,11 @@ def create_project(
     db.commit()
     db.refresh(new_project)
     return new_project
+
+@router.get("", response_model=list[ProjectResponse])
+def get_projects(
+    user: Annotated[models.User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)]
+):
+    projects = db.execute(select(models.Project).where(models.Project.user_id == user.id)).scalars().all()
+    return projects
