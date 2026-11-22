@@ -46,7 +46,7 @@ function Dashboard() {
             {error && <p className="error">{error}</p>}
             <section className="project-page">
                 {projects.map((project) => 
-                <button className="project" onClick={() => navigate('/project', { state: { project } })} key={project.id}>
+                <button className="project" onClick={() => navigate(`/project/${project.id}`)} key={project.id}>
                     <h2>{project.name}</h2>
                 </button>)}
                 <button className="project create-project" type="button" onClick={() => {
