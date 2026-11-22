@@ -66,6 +66,7 @@ function Dashboard() {
                         try {
                             const proj = await createProject(newProjectName);
                             setProjects((current) => [proj, ...current]);
+                            setNewProjectName('');
                             createDialogRef.current?.close();
                         }
                         catch (err) {
