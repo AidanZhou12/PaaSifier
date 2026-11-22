@@ -46,6 +46,40 @@
   text-align: left;
 }
 
+.project-page {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 24px 16px;
+}
+
+.project-page > .project {
+  display: grid;
+  place-items: center;
+  min-height: 100px;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #000;
+  border-radius: 0;
+  background: #fff;
+}
+
+.project-page > .project h2,
+.project-page > button.project {
+  min-width: 0;
+  margin: 0;
+  color: #08060d;
+  font: 500 16px/118% var(--heading);
+  letter-spacing: -0.24px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.project-page > button.project {
+  appearance: none;
+  cursor: pointer;
+}
+
 .form-field label {
   display: inline-flex;
   flex-direction: column;

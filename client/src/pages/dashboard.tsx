@@ -48,13 +48,13 @@ function Dashboard() {
                 <div className="project" key={project.id}>
                     <h2>{project.name}</h2>
                 </div>)}
+                <button className="project" type="button" onClick={() => {
+                    // Start fresh every time: no leftover error or name from the last attempt
+                    setCreateError('');
+                    setNewProjectName('');
+                    createDialogRef.current?.showModal();
+                }}>Create project</button>
             </section>
-            <button onClick={() => {
-                // Start fresh every time: no leftover error or name from the last attempt
-                setCreateError('');
-                setNewProjectName('');
-                createDialogRef.current?.showModal();
-            }}>Create project</button>
             {/* Opens centered on top of the page. Closes with Escape, Cancel, or clicking the dimmed background,
                 but not while a project is being created. */}
             <dialog
