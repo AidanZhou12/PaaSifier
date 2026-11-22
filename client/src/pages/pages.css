@@ -211,3 +211,51 @@
 .modal-content .create-form > button[type='submit'] {
   justify-self: end;
 }
+
+/* Project page heading row: name on the left, delete button on the right.
+   Same side padding as the h1-after-navbar rule above, since the h1 is now inside this row. */
+.project-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-inline: 24px;
+}
+
+.project-header h1 {
+  min-width: 0;          /* lets long names wrap instead of pushing the button off screen */
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.delete-button {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border: 0;
+  background: #d32f2f;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.delete-button:hover:not(:disabled) {
+  background: #b71c1c;
+}
+
+.delete-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Shows that it can't be clicked while the delete is running */
+.delete-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Error messages (used on every page with className="error") */
+.error {
+  color: #e5484d;
+}

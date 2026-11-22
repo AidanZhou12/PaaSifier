@@ -1,6 +1,6 @@
 import './pages.css'
 import { ApiError, getCurrentUser, logout, type UserResponse } from '../api/users'
-import { getProject, type ProjectResponse } from '../api/projects'
+import { deleteProject, getProject, type ProjectResponse } from '../api/projects'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 
@@ -11,6 +11,9 @@ function Project() {
     const [user, setUser] = useState<UserResponse | null>(null);
     // The result of the last fetch, tagged with the ID it was for
     const [loaded, setLoaded] = useState<{ id: number; project: ProjectResponse | null; error: string } | null>(null);
+    // True while the delete request is running; drives the button text and disables it
+    const [deleting, setDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -54,6 +57,23 @@ function Project() {
     // e.g. /project/abc never reaches the backend
     const error = Number.isInteger(projectId) ? (current?.error ?? '') : 'Project not found';
 
+    async function handleDelete() {
+        if (!project) {
+            return;
+        }
+        setDeleteError('');
+        setDeleting(true);
+        try {
+            await deleteProject(project.id);
+            // The dashboard reloads its list, so the deleted project won't be in it
+            navigate('/dashboard');
+        } catch (err) {
+            setDeleteError(err instanceof ApiError ? err.message : 'Something went wrong');
+        } finally {
+            setDeleting(false);
+        }
+    }
+
     if (!user) {
         return null;
     }
@@ -73,8 +93,17 @@ function Project() {
             ) : !project ? (
                 <p>Loading...</p>
             ) : (
-                <h1>{project.name}</h1>
+                // Project name on the left, delete button on the right, on one line
+                <div className="project-header">
+                    <h1>{project.name}</h1>
+                    {/* Disabled while a delete is already running */}
+                    <button className="delete-button" onClick={handleDelete} disabled={deleting}>
+                        {deleting ? 'Deleting...' : 'Delete project'}
+                    </button>
+                </div>
             )}
+            {/* Shown under the heading row, next to the button that caused it */}
+            {deleteError && <p className="error">{deleteError}</p>}
         </main>
     )
 }
