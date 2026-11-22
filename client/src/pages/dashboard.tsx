@@ -64,7 +64,9 @@ function Dashboard() {
                         e.preventDefault();
                         setError('');
                         try {
-                            await createProject(newProjectName);
+                            const proj = await createProject(newProjectName);
+                            setProjects((current) => [proj, ...current]);
+                            createDialogRef.current?.close();
                         }
                         catch (err) {
                             setError(err instanceof ApiError ? err.message: "Something went wrong");
