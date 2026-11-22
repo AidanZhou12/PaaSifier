@@ -19,15 +19,15 @@ function Dashboard() {
             });
     }, [navigate]);
 
+    useEffect(() => {
+        getProjects()
+            .then(setProjects)
+            .catch((err) => setError(err instanceof ApiError ? err.message : 'Something went wrong'));
+    }, []);
+
     if (!user) {
         return null;
     }
-
-    useEffect(() => {
-    getProjects()
-        .then(setProjects)
-        .catch((err) => setError(err instanceof ApiError ? err.message : 'Something went wrong'));
-    }, []);
 
     return (
         <main>
@@ -36,6 +36,13 @@ function Dashboard() {
                 <button onClick={async () => {await logout(); navigate('/login')}}>Log out</button>
             </nav>
             <h1>Projects</h1>
+            {error && <p className="error">{error}</p>}
+            <section className="project-page">
+                {projects.map((project) => 
+                <div className="project" key={project.id}>
+                    <h2>{project.name}</h2>
+                </div>)}
+            </section>
         </main>
     );
 }

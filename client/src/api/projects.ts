@@ -14,3 +14,7 @@ export interface ProjectResponse {
 export function getProjects(): Promise<ProjectResponse[]> {
     return request<ProjectResponse[]>('GET', '/projects', undefined, 'Failed to load projects');
 }
+
+export function createProject(name: string): Promise<ProjectResponse> {
+    return request<ProjectResponse>('POST', '/projects/create', {name: name}, 'Failed to create project');
+}
