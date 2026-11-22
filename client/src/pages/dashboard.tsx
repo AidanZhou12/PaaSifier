@@ -75,7 +75,7 @@ function Dashboard() {
                     }}>
                         <div className="project-name-input">
                             <label>
-                                Project name:
+                                Project name
                                 <input type="text" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} required />
                             </label>
                         </div>
