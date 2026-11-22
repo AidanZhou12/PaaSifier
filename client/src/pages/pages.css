@@ -12,19 +12,38 @@
   font-weight: 700;
 }
 
-.navbar .action-button {
+.navbar .action-button,
+.navbar button {
   display: inline-block;
   padding: 6px 12px;
+  border: 0;
   background: #000;
   color: #fff;
+  font: inherit;
   font-size: 14px;
   line-height: 1.4;
+  letter-spacing: inherit;
+  cursor: pointer;
   text-decoration: none;
 }
 
-.navbar .action-button:focus-visible {
+.navbar .action-button:last-child,
+.navbar button {
+  box-sizing: border-box;
+  inline-size: 80px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.navbar .action-button:focus-visible,
+.navbar button:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+.navbar:has(> button) + h1 {
+  padding-inline: 24px;
+  text-align: left;
 }
 
 .form-field label {

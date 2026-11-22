@@ -22,12 +22,11 @@ function Dashboard() {
 
     return (
         <main>
-            <h1>Dashboard</h1>
-            <p>Signed in as {user.username}</p>
-            <button onClick={async () => {
-                await logout();
-                navigate('/login');
-            }}>Log out</button>
+            <nav className="navbar">
+                <span>{user.username}</span>
+                <button onClick={async () => {await logout; navigate('/login')}}>Log out</button>
+            </nav>
+            <h1>Projects</h1>
         </main>
     );
 }
