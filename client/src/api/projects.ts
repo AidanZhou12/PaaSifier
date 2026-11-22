@@ -16,5 +16,5 @@ export function getProjects(): Promise<ProjectResponse[]> {
 }
 
 export function createProject(name: string): Promise<ProjectResponse> {
-    return request<ProjectResponse>('POST', '/projects/create', {name: name}, 'Failed to create project');
+    return request<ProjectResponse>('POST', '/projects/create', { name }, 'Failed to create project');
 }

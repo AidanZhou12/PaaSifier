@@ -43,6 +43,7 @@ function Dashboard() {
                     <h2>{project.name}</h2>
                 </div>)}
             </section>
+            <button onClick={() => {console.log("A pop-up will be here");}}>Create project</button>
         </main>
     );
 }
