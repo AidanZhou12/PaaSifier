@@ -67,5 +67,10 @@ def get_projects(
     user: Annotated[models.User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)]
 ):
-    projects = db.execute(select(models.Project).where(models.Project.user_id == user.id)).scalars().all()
+    # Without order_by, the database can return rows in any order, so the dashboard list could shuffle
+    projects = db.execute(
+        select(models.Project)
+        .where(models.Project.user_id == user.id)
+        .order_by(models.Project.created_at.desc(), models.Project.id.desc())
+    ).scalars().all()
     return projects
