@@ -41,6 +41,17 @@
   outline-offset: 2px;
 }
 
+.navbar span:has(+ .navbar-path) {
+  margin-right: 0;
+}
+
+.navbar button.navbar-path {
+  margin-right: auto;
+  inline-size: auto;
+  background: #fff;
+  color: #000;
+}
+
 .navbar:has(> button) + h1 {
   padding-inline: 24px;
   text-align: left;
