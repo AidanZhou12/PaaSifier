@@ -75,7 +75,7 @@ def get_projects(
     ).scalars().all()
     return projects
 
-@router.delete("/{project_id}", status_code=HTTP_204_NO_CONTENT)
+@router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_project(
     project_id: int,
     user: Annotated[models.User, Depends(get_current_user)],
@@ -83,17 +83,18 @@ def delete_project(
 ):
     project = db.execute(
         select(models.Project)
-        .where(models.Project.id == project_id)
+        .where(models.Project.id == project_id, models.Project.user_id == user.id)
     ).scalar_one_or_none()
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
     try:
-        response = requests.post(f"{IBM_CLOUD_API_URL}/{project.ibm_id}", headers=ibm_headers(), timeout=30)
+        response = requests.delete(f"{IBM_CLOUD_API_URL}/projects/{project.ibm_id}", headers=ibm_headers(), timeout=30)
     except requests.RequestException:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Could not reach IBM Cloud")
-    
-    if response.status_code != status.HTTP_202_ACCEPTED:
+
+    # 404 means IBM no longer has it, so it's safe to remove our record too
+    if response.status_code not in (status.HTTP_202_ACCEPTED, status.HTTP_404_NOT_FOUND):
         if response.status_code in (status.HTTP_400_BAD_REQUEST, status.HTTP_409_CONFLICT):
             try:
                 message = response.json()["errors"][0]["message"]
