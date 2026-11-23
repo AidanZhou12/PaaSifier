@@ -45,3 +45,11 @@ export interface ApplicationResponse {
     status: string
     endpoint: string | null;
 }
+
+export function createApplication(data: ApplicationCreate, project_id: number): Promise<ApplicationResponse> {
+    return request<ApplicationResponse>('POST', `/projects/${project_id}/apps`, data, 'Failed to create application');
+}
+
+export function getApplications(project_id: number): Promise<ApplicationResponse[]> {
+    return request<ApplicationResponse[]>('GET', `/projects/${project_id}/apps`, undefined, 'Failed to fetch applications');
+}
