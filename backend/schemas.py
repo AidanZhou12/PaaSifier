@@ -60,7 +60,15 @@ class ApplicationBase(BaseModel):
 
 class ApplicationCreate(ApplicationBase):
     image_reference: str = Field(min_length=1, max_length=256)
-    # Defaults are used when the request doesn't include them (matching models.py).
-    # ge=0 ("greater than or equal to 0") rejects negative numbers with a 422.
     min_instances: int = Field(default=0, ge=0)
     max_instances: int = Field(default=10, ge=0)
+
+class ApplicationResponse(ApplicationCreate):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    crn: str
+    href: str
+    ibm_id: str
+    status: str
+    endpoint: str
