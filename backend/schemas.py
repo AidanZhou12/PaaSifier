@@ -5,6 +5,9 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from pydantic_core import PydanticCustomError
 
 USERNAME_PATTERN = re.compile(r"^[A-Za-z0-9]+$")
+# IBM Code Engine app names become part of the app's URL, so they follow DNS label rules:
+# lowercase letters, numbers and hyphens, starting with a letter and not ending with a hyphen
+APP_NAME_PATTERN = re.compile(r"^[a-z]([-a-z0-9]*[a-z0-9])?$")
 
 class UserBase(BaseModel):
     username: str
@@ -57,6 +60,17 @@ class ProjectResponse(ProjectBase):
 
 class ApplicationBase(BaseModel):
     name: str = Field(min_length=1, max_length=63)
+
+    @field_validator("name")
+    @classmethod
+    def app_name_format(cls, value: str) -> str:
+        if not APP_NAME_PATTERN.fullmatch(value):
+            raise PydanticCustomError(
+                "app_name_format",
+                "Application name can only contain lowercase letters, numbers and hyphens, "
+                "must start with a letter, and can't end with a hyphen",
+            )
+        return value
 
 class ApplicationCreate(ApplicationBase):
     image_reference: str = Field(min_length=1, max_length=256)
