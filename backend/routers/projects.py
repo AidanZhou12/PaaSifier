@@ -108,30 +108,21 @@ def delete_project(
     db.delete(project)
     db.commit()
 
-@router.get("/{project_id}", response_model=ProjectResponse)
-def get_project(
-    project_id: int,
-    user: Annotated[models.User, Depends(get_current_user)],
-    db: Annotated[Session, Depends(get_db)],
-):
-    project = db.execute(
-        select(models.Project)
-        .where(models.Project.id == project_id, models.Project.user_id == user.id)
-    ).scalar_one_or_none()
-    if not project:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+def refresh_project_status(project: models.Project, db: Session) -> None:
+    """Update project.status from IBM (e.g. "creating" -> "active") and save it if it changed.
 
-    # Refresh the status from IBM (e.g. "creating" -> "active"). If IBM can't be reached or
-    # returns an error, fall back to the saved data instead of failing the page.
+    If IBM can't be reached or returns an error, the saved status is left as it is,
+    so callers can carry on with the data they have.
+    """
     try:
         response = requests.get(
             f"{IBM_CLOUD_API_URL}/projects/{project.ibm_id}",
             headers=ibm_headers(),
-            timeout=5,  # short: the user is waiting for the page to load
+            timeout=5,  # short: a user is waiting on this
         )
     except requests.RequestException:
         logger.warning("Could not reach IBM Cloud to refresh project %s", project.id)
-        return project
+        return
 
     if response.status_code == status.HTTP_200_OK:
         try:
@@ -152,6 +143,21 @@ def get_project(
     else:
         logger.warning("IBM Cloud returned %s when refreshing project %s", response.status_code, project.id)
 
+
+@router.get("/{project_id}", response_model=ProjectResponse)
+def get_project(
+    project_id: int,
+    user: Annotated[models.User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    project = db.execute(
+        select(models.Project)
+        .where(models.Project.id == project_id, models.Project.user_id == user.id)
+    ).scalar_one_or_none()
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+    refresh_project_status(project, db)
     return project
 
 @router.post("/{project_id}/app", response_model=ApplicationResponse, status_code=status.HTTP_201_CREATED)
@@ -168,6 +174,19 @@ def create_application(
     ).scalar_one_or_none()
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+    # IBM only accepts apps in active projects. The saved status may be out of date
+    # (it's only refreshed when the project page loads), so ask IBM before refusing.
+    if project.status != "active":
+        refresh_project_status(project, db)
+    if project.status != "active":
+        if project.status == "creating":
+            detail = "This project is still being created. Try again in a moment."
+        elif project.status == "not_found":
+            detail = "This project no longer exists in IBM Cloud"
+        else:
+            detail = f"Applications can't be created while the project is {project.status}"
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=detail)
 
     # App names are unique within a project, so check before calling IBM
     existing = db.execute(
