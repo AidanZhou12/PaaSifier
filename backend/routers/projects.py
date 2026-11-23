@@ -241,4 +241,25 @@ def create_application(
     db.commit()
     db.refresh(new_app)
     return new_app
-    
+
+@router.get("/{project_id}/apps", response_model=list[ApplicationResponse])
+def get_applications(
+    project_id: int,
+    user: Annotated[models.User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    # Same 404 for a project that doesn't exist and one that belongs to someone else
+    project = db.execute(
+        select(models.Project)
+        .where(models.Project.id == project_id, models.Project.user_id == user.id)
+    ).scalar_one_or_none()
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+    # Newest first, like the project list; id breaks ties between apps created at the same moment
+    applications = db.execute(
+        select(models.Application)
+        .where(models.Application.project_id == project.id)
+        .order_by(models.Application.created_at.desc(), models.Application.id.desc())
+    ).scalars().all()
+    return applications
