@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 import models
 from typing import Annotated
-from schemas import ProjectBase, ProjectCreate, ProjectResponse
+from schemas import ProjectBase, ProjectCreate, ProjectResponse, ApplicationBase, ApplicationCreate, ApplicationResponse
 from auth import get_current_user
 from ibm_cloud import IBM_CLOUD_API_URL, IBM_CLOUD_RESOURCE_GROUP_ID, ibm_headers
 from datetime import datetime
@@ -153,4 +153,73 @@ def get_project(
         logger.warning("IBM Cloud returned %s when refreshing project %s", response.status_code, project.id)
 
     return project
+
+@router.post("/{project_id}/app", response_model=ApplicationResponse, status_code=status.HTTP_201_CREATED)
+def create_application(
+    project_id: int,
+    app: ApplicationCreate,
+    user: Annotated[models.User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    # The project must exist and belong to the logged-in user
+    project = db.execute(
+        select(models.Project)
+        .where(models.Project.id == project_id, models.Project.user_id == user.id)
+    ).scalar_one_or_none()
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+    # App names are unique within a project, so check before calling IBM
+    existing = db.execute(
+        select(models.Application)
+        .where(models.Application.project_id == project.id, models.Application.name == app.name)
+    ).scalar_one_or_none()
+    if existing:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="An application with that name already exists in this project")
+
+    body = {
+        "name": app.name,
+        "image_reference": app.image_reference,
+        "scale_min_instances": app.min_instances,
+        "scale_max_instances": app.max_instances,
+    }
+
+    try:
+        response = requests.post(
+            f"{IBM_CLOUD_API_URL}/projects/{project.ibm_id}/apps",
+            headers=ibm_headers(),
+            json=body,
+            timeout=30,
+        )
+    except requests.RequestException:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Could not reach IBM Cloud")
+
+    if response.status_code not in (status.HTTP_201_CREATED, status.HTTP_202_ACCEPTED):
+        # Pass on IBM's message for problems with the user's input (e.g. an invalid name or image);
+        # never forward other IBM codes as-is, since a 401 would look like the user's session expired
+        if response.status_code in (status.HTTP_400_BAD_REQUEST, status.HTTP_409_CONFLICT):
+            try:
+                message = response.json()["errors"][0]["message"]
+            except (ValueError, KeyError, IndexError, TypeError):
+                message = "IBM Cloud rejected the application"
+            raise HTTPException(status_code=response.status_code, detail=message)
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="IBM Cloud could not create the application")
+
+    data = response.json()
+    new_app = models.Application(
+        project_id=project.id,
+        name=app.name,
+        created_at=datetime.fromisoformat(data["created_at"]),
+        href=data["href"],
+        ibm_id=data["id"],
+        image_reference=app.image_reference,
+        status=data["status"],
+        endpoint=data.get("endpoint"),
+        min_instances=app.min_instances,
+        max_instances=app.max_instances,
+    )
+    db.add(new_app)
+    db.commit()
+    db.refresh(new_app)
+    return new_app
     

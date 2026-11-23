@@ -83,4 +83,5 @@ class ApplicationResponse(ApplicationBase):
     href: str
     ibm_id: str
     status: str
-    endpoint: str
+    # Empty until IBM has finished deploying the app
+    endpoint: str | None = None
