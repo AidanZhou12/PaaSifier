@@ -26,3 +26,22 @@ export function deleteProject(id: number): Promise<void> {
 export function getProject(id: number): Promise<ProjectResponse> {
     return request<ProjectResponse>('GET', `/projects/${id}`, undefined, 'Failed to load project');
 }
+
+export interface ApplicationCreate {
+    name: string;
+    image_reference: string;
+    min_instances: number;
+    max_instances: number;
+}
+
+export interface ApplicationResponse {
+    id: number;
+    name: string;
+    image_reference: string;
+    min_instances: number;
+    max_instances: number
+    href: string
+    ibm_id: string
+    status: string
+    endpoint: string | null;
+}
