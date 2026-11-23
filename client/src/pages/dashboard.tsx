@@ -97,7 +97,7 @@ function Dashboard() {
                         <div className="project-name-input">
                             <label>
                                 Project name
-                                <input type="text" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} maxLength={50} required />
+                                <input type="text" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} maxLength={128} required />
                             </label>
                         </div>
                         {createError && <p className="error">{createError}</p>}

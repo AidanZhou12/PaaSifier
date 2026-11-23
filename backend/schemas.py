@@ -39,8 +39,8 @@ class TokenResponse(BaseModel):
     user: UserResponse
 
 class ProjectBase(BaseModel):
-    # Matches the length of Project.name in models.py
-    name: str = Field(min_length=1, max_length=50)
+    # Matches Project.name in models.py and IBM Code Engine's 128-character limit
+    name: str = Field(min_length=1, max_length=128)
 
 # The owner comes from the logged-in user's token, never from the request body
 class ProjectCreate(ProjectBase):

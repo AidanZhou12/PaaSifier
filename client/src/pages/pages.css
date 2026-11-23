@@ -49,6 +49,11 @@
   inline-size: auto;
   background: #fff;
   color: #000;
+  /* Long project names (up to 128 characters) are cut off with "..."; the full name shows on hover */
+  max-inline-size: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .navbar .navbar-path + button:not(.navbar-path) {
