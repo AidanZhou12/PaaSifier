@@ -1,7 +1,7 @@
 from __future__ import annotations
 import re
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic_core import PydanticCustomError
 
 USERNAME_PATTERN = re.compile(r"^[A-Za-z0-9]+$")
@@ -63,11 +63,23 @@ class ApplicationCreate(ApplicationBase):
     min_instances: int = Field(default=0, ge=0)
     max_instances: int = Field(default=10, ge=0)
 
-class ApplicationResponse(ApplicationCreate):
+    # Runs after each field has passed its own checks, so both values are known to be >= 0 here
+    @model_validator(mode="after")
+    def check_instance_range(self) -> "ApplicationCreate":
+        # max_instances of 0 is always allowed (including with min_instances 0), so only compare when it's set
+        if self.max_instances != 0 and self.max_instances < self.min_instances:
+            raise PydanticCustomError("instance_range", "max_instances can't be less than min_instances")
+        return self
+
+# Inherits from ApplicationBase, not ApplicationCreate, so the request checks above
+# (defaults, ge=0, the instance range) don't run on data coming back from the database
+class ApplicationResponse(ApplicationBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    crn: str
+    image_reference: str
+    min_instances: int
+    max_instances: int
     href: str
     ibm_id: str
     status: str
