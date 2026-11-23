@@ -35,7 +35,7 @@ class Project(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     # IBM CRNs are ~115 characters, so 100 is too short
     crn: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
-    href: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    href: Mapped[str] = mapped_column(String(2048), nullable=False, unique=True)
     ibm_id: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False)
 
@@ -43,11 +43,11 @@ class Application(Base):
     __tablename__ = "application"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(String(63), nullable=False, unique=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    href: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    href: Mapped[str] = mapped_column(String(2048), nullable=False, unique=True)
     ibm_id: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
-    image_reference: Mapped[str] = mapped_column(String(63), nullable=False)
+    image_reference: Mapped[str] = mapped_column(String(256), nullable=False)
     status: Mapped[str] = mapped_column(String(50), nullable=False)
     endpoint: Mapped[str] = mapped_column(String)
     min_instances: Mapped[int] = mapped_column(default=0)
