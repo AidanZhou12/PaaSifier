@@ -160,7 +160,7 @@ def get_project(
     refresh_project_status(project, db)
     return project
 
-@router.post("/{project_id}/app", response_model=ApplicationResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/{project_id}/apps", response_model=ApplicationResponse, status_code=status.HTTP_201_CREATED)
 def create_application(
     project_id: int,
     app: ApplicationCreate,
