@@ -332,3 +332,58 @@ def get_applications(
     if any(application.status in ("deploying", "pending") for application in applications):
         refresh_application_statuses(project, applications, db)
     return applications
+
+@router.delete("/{project_id}/apps/{app_name}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_application(
+    project_id: int,
+    app_name: str,
+    user: Annotated[models.User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    # The project must belong to the logged-in user (same 404 for someone else's project)
+    project = db.execute(
+        select(models.Project)
+        .where(models.Project.id == project_id, models.Project.user_id == user.id)
+    ).scalar_one_or_none()
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+    # App names are unique within a project, so project + name identifies one app
+    application = db.execute(
+        select(models.Application)
+        .where(models.Application.project_id == project.id, models.Application.name == app_name)
+    ).scalar_one_or_none()
+    if not application:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found")
+
+    # Delete on IBM first, then in our database, so a failed IBM call never leaves
+    # an app running in IBM that our database has forgotten about
+    try:
+        response = requests.delete(
+            f"{IBM_CLOUD_API_URL}/projects/{project.ibm_id}/apps/{application.name}",
+            headers=ibm_headers(),
+            timeout=30,
+        )
+    except requests.RequestException:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Could not reach IBM Cloud")
+
+    # 404 means IBM no longer has the app (e.g. deleted in the IBM console), so it's safe
+    # to remove our record too; otherwise it could never be deleted from the dashboard
+    deleted_statuses = (
+        status.HTTP_200_OK,
+        status.HTTP_202_ACCEPTED,
+        status.HTTP_204_NO_CONTENT,
+        status.HTTP_404_NOT_FOUND,
+    )
+    if response.status_code not in deleted_statuses:
+        if response.status_code in (status.HTTP_400_BAD_REQUEST, status.HTTP_409_CONFLICT):
+            try:
+                message = response.json()["errors"][0]["message"]
+            except (ValueError, KeyError, IndexError, TypeError):
+                message = "IBM Cloud rejected deletion"
+            raise HTTPException(status_code=response.status_code, detail=message)
+        # Never forward other IBM codes as-is: a 401 would look like the user's session expired
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="IBM Cloud could not delete the application")
+
+    db.delete(application)
+    db.commit()
