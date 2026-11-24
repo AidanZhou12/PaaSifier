@@ -339,7 +339,7 @@ main:has(> .create-app-form) {
 /* Applications table on the project page */
 .application-table {
   width: calc(100% - 48px);   /* 24px each side, matching the headings above */
-  margin: 0 24px 16px;
+  margin: max(0px, calc(25svh - 105px)) 24px 16px;
   border-collapse: collapse;
   text-align: left;
 }
