@@ -39,7 +39,7 @@ function Dashboard() {
         <main>
             <nav className="navbar">
                 <span>{user.username}</span>
-                <button className="navbar-path" onClick={() => navigate('/dashboard')}>Projects</button>
+                <button className="navbar-path" onClick={() => navigate('/dashboard')}>Dashboard</button>
                 <button onClick={async () => {await logout(); navigate('/login')}}>Log out</button>
             </nav>
             <h1>Projects</h1>

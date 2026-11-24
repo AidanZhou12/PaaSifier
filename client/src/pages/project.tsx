@@ -89,9 +89,9 @@ function Project() {
         <main>
             <nav className="navbar">
                 <span>{user.username}</span>
-                <button className="navbar-path" onClick={() => navigate('/dashboard')}>Projects</button>
+                <button className="navbar-path" onClick={() => navigate('/dashboard')}>Dashboard</button>
                 {project && (
-                    <button className="navbar-path" title={project.name} onClick={() => navigate(`/project/${project.id}`)}>{project.name}</button>
+                    <button className="navbar-path" onClick={() => navigate(`/project/${project.id}`)}>{project.name}</button>
                 )}
                 <button onClick={async () => {await logout(); navigate('/login')}}>Log out</button>
             </nav>
