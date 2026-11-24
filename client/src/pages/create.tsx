@@ -60,7 +60,7 @@ function Create() {
     const project = current?.project ?? null;
     const error = Number.isInteger(projectId) ? (current?.error ?? '') : 'Project not found';
 
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         if (!project) {
             return;
