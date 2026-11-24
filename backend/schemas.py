@@ -1,10 +1,13 @@
 from __future__ import annotations
 import re
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic_core import PydanticCustomError
 
 USERNAME_PATTERN = re.compile(r"^[A-Za-z0-9]+$")
+# IBM Code Engine app names become part of the app's URL, so they follow DNS label rules:
+# lowercase letters, numbers and hyphens, starting with a letter and not ending with a hyphen
+APP_NAME_PATTERN = re.compile(r"^[a-z]([-a-z0-9]*[a-z0-9])?$")
 
 class UserBase(BaseModel):
     username: str
@@ -39,8 +42,8 @@ class TokenResponse(BaseModel):
     user: UserResponse
 
 class ProjectBase(BaseModel):
-    # Matches the length of Project.name in models.py
-    name: str = Field(min_length=1, max_length=50)
+    # Matches Project.name in models.py and IBM Code Engine's 128-character limit
+    name: str = Field(min_length=1, max_length=128)
 
 # The owner comes from the logged-in user's token, never from the request body
 class ProjectCreate(ProjectBase):
@@ -54,3 +57,45 @@ class ProjectResponse(ProjectBase):
     href: str
     ibm_id: str
     status: str
+
+class ApplicationBase(BaseModel):
+    name: str = Field(min_length=1, max_length=63)
+
+    @field_validator("name")
+    @classmethod
+    def app_name_format(cls, value: str) -> str:
+        if not APP_NAME_PATTERN.fullmatch(value):
+            raise PydanticCustomError(
+                "app_name_format",
+                "Application name can only contain lowercase letters, numbers and hyphens, "
+                "must start with a letter, and can't end with a hyphen",
+            )
+        return value
+
+class ApplicationCreate(ApplicationBase):
+    image_reference: str = Field(min_length=1, max_length=256)
+    min_instances: int = Field(default=0, ge=0)
+    max_instances: int = Field(default=10, ge=0)
+
+    # Runs after each field has passed its own checks, so both values are known to be >= 0 here
+    @model_validator(mode="after")
+    def check_instance_range(self) -> "ApplicationCreate":
+        # max_instances of 0 is always allowed (including with min_instances 0), so only compare when it's set
+        if self.max_instances != 0 and self.max_instances < self.min_instances:
+            raise PydanticCustomError("instance_range", "max_instances can't be less than min_instances")
+        return self
+
+# Inherits from ApplicationBase, not ApplicationCreate, so the request checks above
+# (defaults, ge=0, the instance range) don't run on data coming back from the database
+class ApplicationResponse(ApplicationBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    image_reference: str
+    min_instances: int
+    max_instances: int
+    href: str
+    ibm_id: str
+    status: str
+    # Empty until IBM has finished deploying the app
+    endpoint: str | None = None

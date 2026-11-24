@@ -39,7 +39,7 @@ function Dashboard() {
         <main>
             <nav className="navbar">
                 <span>{user.username}</span>
-                <button className="navbar-path" onClick={() => navigate('/dashboard')}>Projects</button>
+                <button className="navbar-path" onClick={() => navigate('/dashboard')}>Dashboard</button>
                 <button onClick={async () => {await logout(); navigate('/login')}}>Log out</button>
             </nav>
             <h1>Projects</h1>
@@ -97,7 +97,7 @@ function Dashboard() {
                         <div className="project-name-input">
                             <label>
                                 Project name
-                                <input type="text" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} maxLength={50} required />
+                                <input type="text" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} maxLength={128} required />
                             </label>
                         </div>
                         {createError && <p className="error">{createError}</p>}

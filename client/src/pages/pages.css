@@ -49,13 +49,19 @@
   inline-size: auto;
   background: #fff;
   color: #000;
+  /* Long project names (up to 128 characters) are cut off with "..."; the full name shows on hover */
+  max-inline-size: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .navbar .navbar-path + button:not(.navbar-path) {
   margin-inline-start: auto;
 }
 
-.navbar:has(> button) + h1 {
+.navbar:has(> button) + h1,
+.navbar:has(> button) + h1 + h2 {
   padding-inline: 24px;
   text-align: left;
 }
@@ -228,6 +234,11 @@
   overflow-wrap: anywhere;
 }
 
+.applications-list {
+  padding-inline: 24px;
+  text-align: left;
+}
+
 .delete-button {
   flex-shrink: 0;
   padding: 6px 12px;
@@ -258,4 +269,179 @@
 /* Error messages (used on every page with className="error") */
 .error {
   color: #e5484d;
+}
+
+/* Create app page (create.tsx) */
+main:has(> .create-app-form) {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
+.create-app-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-block: auto;
+  padding-top: 16px;
+  padding-bottom: 190px;
+}
+
+.create-app-form h2 {
+  margin: 16px 0 0;
+}
+
+.create-app-buttons {
+  display: flex;
+  justify-content: space-between;
+  width: 300px;   /* same width as the inputs, so the buttons line up with them */
+  margin-top: 8px;
+}
+
+.create-app-buttons button {
+  padding: 6px 12px;
+  border: 0;
+  background: #000;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.create-app-buttons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Min and max instances side by side, together as wide as the other inputs (300px) */
+.instances-row {
+  display: flex;
+  gap: 12px;
+  width: 300px;
+}
+
+.instances-row .form-field {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Fill the half-width column; long label text wraps instead of widening the column */
+.instances-row .form-field label {
+  display: flex;
+  width: 100%;
+}
+
+.instances-row .form-field input {
+  width: 100%;
+}
+
+/* Applications table on the project page */
+.application-table {
+  width: calc(100% - 48px);   /* 24px each side, matching the headings above */
+  margin: max(0px, calc(25svh - 105px)) 24px 16px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.application-table th,
+.application-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.application-table th {
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+.application-table :is(th, td):first-child {
+  padding-inline-start: 0;
+  overflow-wrap: anywhere;
+}
+
+.application-table :is(th, td):not(:first-child) {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.application-table :is(th, td):last-child {
+  padding-inline-end: 0;
+  padding-inline-start: 68px;
+  text-align: left;
+}
+
+.application-table .create-application-row > td {
+  padding: 0;
+  border-bottom-color: transparent;
+}
+
+.create-application-button {
+  display: block;
+  width: 100%;
+  padding: 8px 12px 8px 0;
+  border: 0;
+  background: #fff;
+  color: #000;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* App names in the project page's table: look like text, act like links */
+.application-name-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.application-name-button:hover {
+  text-decoration: underline;
+}
+
+.application-name-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Application page: status and link under the heading, lined up with it */
+.application-details {
+  padding-inline: 24px;
+  text-align: left;
+}
+
+.application-details p {
+  margin: 0 0 8px;
+}
+
+/* Long URLs wrap instead of stretching the page */
+.application-details a {
+  overflow-wrap: anywhere;
+}
+
+.app-status {
+  font-weight: 600;
+}
+
+.app-status-ready {
+  color: #2e7d32;   /* green */
+}
+
+.app-status-failed {
+  color: #d32f2f;   /* red, same as the delete button */
+}
+
+.app-status-warning {
+  color: #b58900;   /* a dark yellow; bright yellow is hard to read on a white background */
+}
+
+.app-status-deploying {
+  color: #1565c0;   /* blue, for deploying and pending */
 }

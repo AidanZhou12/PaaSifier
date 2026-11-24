@@ -6,6 +6,8 @@ import Login from "./pages/login"
 import Landing from './pages/landing'
 import Dashboard from './pages/dashboard'
 import Project from "./pages/project"
+import Create from "./pages/create"
+import Application from "./pages/application"
 
 function App() {
 
@@ -17,6 +19,8 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/project/:id" element={<Project />} />
+      <Route path="/project/:id/create" element={<Create />} />
+      <Route path="/project/:id/apps/:appName" element={<Application />} />
     </Routes>
     </>
   )
