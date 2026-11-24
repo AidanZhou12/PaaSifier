@@ -234,6 +234,11 @@
   overflow-wrap: anywhere;
 }
 
+.applications-list {
+  padding-inline: 24px;
+  text-align: left;
+}
+
 .delete-button {
   flex-shrink: 0;
   padding: 6px 12px;
