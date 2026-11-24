@@ -242,6 +242,70 @@ def create_application(
     db.refresh(new_app)
     return new_app
 
+# Code Engine returns at most 100 apps per page; stop after this many pages so a
+# misbehaving response can't keep the request going forever
+IBM_APPS_PAGE_LIMIT = 100
+IBM_APPS_MAX_PAGES = 10
+
+
+def refresh_application_statuses(
+    project: models.Project, applications: list[models.Application], db: Session
+) -> None:
+    """Update status and endpoint for a project's apps using one IBM list request (per page).
+
+    If IBM can't be reached or returns an error, nothing is changed and the saved data is used.
+    """
+    ibm_apps: dict[str, dict] = {}
+    params: dict[str, str | int] = {"limit": IBM_APPS_PAGE_LIMIT}
+    for _ in range(IBM_APPS_MAX_PAGES):
+        try:
+            response = requests.get(
+                f"{IBM_CLOUD_API_URL}/projects/{project.ibm_id}/apps",
+                headers=ibm_headers(),
+                params=params,
+                timeout=5,  # short: a user is waiting on this
+            )
+        except requests.RequestException:
+            logger.warning("Could not reach IBM Cloud to refresh apps for project %s", project.id)
+            return
+        if response.status_code != status.HTTP_200_OK:
+            logger.warning("IBM Cloud returned %s when refreshing apps for project %s", response.status_code, project.id)
+            return
+        try:
+            data = response.json()
+            for ibm_app in data.get("apps", []):
+                ibm_apps[ibm_app["id"]] = ibm_app
+            # IBM includes "next" only when there are more pages
+            next_start = (data.get("next") or {}).get("start")
+        except (ValueError, KeyError, TypeError, AttributeError):
+            logger.warning("Unexpected response from IBM Cloud when refreshing apps for project %s", project.id)
+            return
+        if not next_start:
+            break
+        params = {"limit": IBM_APPS_PAGE_LIMIT, "start": next_start}
+
+    changed = False
+    for application in applications:
+        ibm_app = ibm_apps.get(application.ibm_id)
+        # Apps missing from IBM's list are left alone: a just-created app may not be listed yet
+        if ibm_app is None:
+            continue
+        new_status = ibm_app.get("status")
+        if isinstance(new_status, str) and new_status and new_status != application.status:
+            application.status = new_status
+            changed = True
+        # The URL usually only appears once IBM has finished deploying the app
+        new_endpoint = ibm_app.get("endpoint")
+        if isinstance(new_endpoint, str) and new_endpoint and new_endpoint != application.endpoint:
+            application.endpoint = new_endpoint
+            changed = True
+    if changed:
+        db.commit()
+        # commit expires loaded objects; reload them so the response has the saved values
+        for application in applications:
+            db.refresh(application)
+
+
 @router.get("/{project_id}/apps", response_model=list[ApplicationResponse])
 def get_applications(
     project_id: int,
@@ -262,4 +326,9 @@ def get_applications(
         .where(models.Application.project_id == project.id)
         .order_by(models.Application.created_at.desc(), models.Application.id.desc())
     ).scalars().all()
+
+    # ready, failed and warning are settled. Only ask IBM when something is still deploying,
+    # so most page loads don't wait on IBM at all.
+    if any(application.status == "deploying" for application in applications):
+        refresh_application_statuses(project, applications, db)
     return applications
