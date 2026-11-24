@@ -60,7 +60,8 @@
   margin-inline-start: auto;
 }
 
-.navbar:has(> button) + h1 {
+.navbar:has(> button) + h1,
+.navbar:has(> button) + h1 + h2 {
   padding-inline: 24px;
   text-align: left;
 }

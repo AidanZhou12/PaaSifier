@@ -102,7 +102,7 @@ function Create() {
                 )}
                 <button onClick={async () => {await logout(); navigate('/login')}}>Log out</button>
             </nav>
-            <h1>New App</h1>
+            <h1>New app</h1>
             <h2>Source code</h2>
             {error && <p className="error">{error}</p>}
             {project && (
