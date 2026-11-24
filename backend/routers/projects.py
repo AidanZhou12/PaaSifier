@@ -329,6 +329,6 @@ def get_applications(
 
     # ready, failed and warning are settled. Only ask IBM when something is still deploying,
     # so most page loads don't wait on IBM at all.
-    if any(application.status == "deploying" for application in applications):
+    if any(application.status in ("deploying", "pending") for application in applications):
         refresh_application_statuses(project, applications, db)
     return applications
