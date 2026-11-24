@@ -299,3 +299,25 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Min and max instances side by side, together as wide as the other inputs (300px) */
+.instances-row {
+  display: flex;
+  gap: 12px;
+  width: 300px;
+}
+
+.instances-row .form-field {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Fill the half-width column; long label text wraps instead of widening the column */
+.instances-row .form-field label {
+  display: flex;
+  width: 100%;
+}
+
+.instances-row .form-field input {
+  width: 100%;
+}

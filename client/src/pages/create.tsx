@@ -103,6 +103,7 @@ function Create() {
                 <button onClick={async () => {await logout(); navigate('/login')}}>Log out</button>
             </nav>
             <h1>New App</h1>
+            <h2>Source code</h2>
             {error && <p className="error">{error}</p>}
             {project && (
                 <form className="create-app-form" onSubmit={handleSubmit}>
@@ -123,7 +124,6 @@ function Create() {
                         </label>
                     </div>
 
-                    <h2>Source code</h2>
                     <div className="form-field">
                         <label>
                             Image reference
@@ -131,7 +131,7 @@ function Create() {
                                 type="text"
                                 value={imageReference}
                                 onChange={(e) => setImageReference(e.target.value)}
-                                placeholder="icr.io/codeengine/helloworld"
+                                placeholder="docker.io/namespace/repository:tag"
                                 maxLength={256}
                                 disabled={submitting}
                                 required
@@ -139,34 +139,36 @@ function Create() {
                         </label>
                     </div>
 
-                    <h2>Scaling</h2>
-                    <div className="form-field">
-                        <label>
-                            Min instances
-                            <input
-                                type="number"
-                                value={minInstances}
-                                onChange={(e) => setMinInstances(e.target.value)}
-                                min={0}
-                                step={1}
-                                disabled={submitting}
-                                required
-                            />
-                        </label>
-                    </div>
-                    <div className="form-field">
-                        <label>
-                            Max instances (0 for no limit)
-                            <input
-                                type="number"
-                                value={maxInstances}
-                                onChange={(e) => setMaxInstances(e.target.value)}
-                                min={0}
-                                step={1}
-                                disabled={submitting}
-                                required
-                            />
-                        </label>
+                    {/* Min and max side by side */}
+                    <div className="instances-row">
+                        <div className="form-field">
+                            <label>
+                                Min instances
+                                <input
+                                    type="number"
+                                    value={minInstances}
+                                    onChange={(e) => setMinInstances(e.target.value)}
+                                    min={0}
+                                    step={1}
+                                    disabled={submitting}
+                                    required
+                                />
+                            </label>
+                        </div>
+                        <div className="form-field">
+                            <label>
+                                Max instances
+                                <input
+                                    type="number"
+                                    value={maxInstances}
+                                    onChange={(e) => setMaxInstances(e.target.value)}
+                                    min={0}
+                                    step={1}
+                                    disabled={submitting}
+                                    required
+                                />
+                            </label>
+                        </div>
                     </div>
 
                     {formError && <p className="error">{formError}</p>}
