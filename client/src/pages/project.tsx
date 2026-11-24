@@ -1,6 +1,6 @@
 import './pages.css'
 import { ApiError, getCurrentUser, logout, type UserResponse } from '../api/users'
-import { deleteProject, getProject, type ProjectResponse } from '../api/projects'
+import { deleteProject, getProject, type ProjectResponse, type ApplicationResponse, createApplication, getApplications } from '../api/projects'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 
@@ -14,6 +14,7 @@ function Project() {
     // True while the delete request is running; drives the button text and disables it
     const [deleting, setDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState('');
+    const [applications, setApplications] = useState<ApplicationResponse[]>([]);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -24,6 +25,12 @@ function Project() {
                 navigate('/login', { replace: true });
             });
     }, [navigate]);
+
+    useEffect(() => {
+        getApplications(projectId)
+        .then(setApplications)
+        .catch((err) => setDeleteError(err instanceof ApiError ? err.message : 'Something went wrong'));
+    }, []);
 
     // Runs again whenever the ID in the URL changes
     useEffect(() => {
@@ -94,13 +101,23 @@ function Project() {
                 <p>Loading...</p>
             ) : (
                 // Project name on the left, delete button on the right, on one line
-                <div className="project-header">
-                    <h1>{project.name}</h1>
-                    {/* Disabled while a delete is already running */}
-                    <button className="delete-button" onClick={handleDelete} disabled={deleting}>
-                        {deleting ? 'Deleting...' : 'Delete project'}
-                    </button>
-                </div>
+                <>
+                    <div className="project-header">
+                        <h1>{project.name}</h1>
+                        {/* Disabled while a delete is already running */}
+                        <button className="delete-button" onClick={handleDelete} disabled={deleting}>
+                            {deleting ? 'Deleting...' : 'Delete project'}
+                        </button>
+                    </div>
+                    <div className="applications-list">
+                        <h2>Applications</h2>
+                    </div>
+                    <section className="application-table">
+                        {applications.map((application) =>
+                        <h3>{application.name}</h3>)}
+                    </section>
+                    <button className="create-application-button" type="button" onClick={() => console.log("this does nothing")}>+ New</button>
+                </>
             )}
             {/* Shown under the heading row, next to the button that caused it */}
             {deleteError && <p className="error">{deleteError}</p>}
