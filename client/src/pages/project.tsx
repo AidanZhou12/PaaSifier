@@ -136,9 +136,13 @@ function Project() {
                                     </td>
                                 </tr>
                             ))}
+                            <tr className="create-application-row">
+                                <td colSpan={3}>
+                                    <button className="create-application-button" type="button" onClick={() => navigate(`/project/${project.id}/create`)}>+ New</button>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
-                    <button className="create-application-button" type="button" onClick={() => navigate(`/project/${project.id}/create`)}>+ New</button>
                 </>
             )}
             {/* Shown under the heading row, next to the button that caused it */}

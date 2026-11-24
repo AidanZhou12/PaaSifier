@@ -370,3 +370,21 @@ main:has(> .create-app-form) {
   padding-inline-start: 68px;
   text-align: left;
 }
+
+.application-table .create-application-row > td {
+  padding: 0;
+  border-bottom-color: transparent;
+}
+
+.create-application-button {
+  display: block;
+  width: 100%;
+  padding: 8px 12px 8px 0;
+  border: 0;
+  background: #fff;
+  color: #000;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+}
