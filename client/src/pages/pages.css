@@ -335,3 +335,27 @@ main:has(> .create-app-form) {
 .instances-row .form-field input {
   width: 100%;
 }
+
+/* Applications table on the project page */
+.application-table {
+  width: calc(100% - 48px);   /* 24px each side, matching the headings above */
+  margin: 0 24px 16px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.application-table th,
+.application-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.application-table th {
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+/* Long URLs wrap instead of stretching the table off the page */
+.application-table td a {
+  overflow-wrap: anywhere;
+}

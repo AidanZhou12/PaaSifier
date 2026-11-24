@@ -112,10 +112,32 @@ function Project() {
                     <div className="applications-list">
                         <h2>Applications</h2>
                     </div>
-                    <section className="application-table">
-                        {applications.map((application) =>
-                        <h3>{application.name}</h3>)}
-                    </section>
+                    <table className="application-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Link</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {applications.map((application) => (
+                                <tr key={application.id}>
+                                    <td>{application.name}</td>
+                                    <td>{application.status}</td>
+                                    <td>
+                                        {/* Empty until IBM has finished deploying the app. Only http(s) URLs
+                                            become links, so an unexpected value can't run as a javascript: link. */}
+                                        {application.endpoint && /^https?:\/\//.test(application.endpoint) && (
+                                            <a href={application.endpoint} target="_blank" rel="noopener noreferrer">
+                                                {application.endpoint}
+                                            </a>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                     <button className="create-application-button" type="button" onClick={() => navigate(`/project/${project.id}/create`)}>+ New</button>
                 </>
             )}
