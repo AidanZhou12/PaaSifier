@@ -267,12 +267,20 @@
 }
 
 /* Create app page (create.tsx) */
+main:has(> .create-app-form) {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
 .create-app-form {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding-bottom: 32px;
+  margin-block: auto;
+  padding-top: 16px;
+  padding-bottom: 190px;
 }
 
 .create-app-form h2 {
