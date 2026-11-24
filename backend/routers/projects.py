@@ -333,6 +333,31 @@ def get_applications(
         refresh_application_statuses(project, applications, db)
     return applications
 
+@router.get("/{project_id}/apps/{app_name}", response_model=ApplicationResponse)
+def get_application(
+    project_id: int,
+    app_name: str,
+    user: Annotated[models.User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    # The project must belong to the logged-in user (same 404 for someone else's project)
+    project = db.execute(
+        select(models.Project)
+        .where(models.Project.id == project_id, models.Project.user_id == user.id)
+    ).scalar_one_or_none()
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+    # App names are unique within a project, so project + name identifies one app
+    application = db.execute(
+        select(models.Application)
+        .where(models.Application.project_id == project.id, models.Application.name == app_name)
+    ).scalar_one_or_none()
+    if not application:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found")
+    return application
+
+
 @router.delete("/{project_id}/apps/{app_name}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_application(
     project_id: int,

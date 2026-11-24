@@ -2,7 +2,7 @@ import './pages.css'
 import { useNavigate, useParams } from 'react-router'
 import { useEffect, useState } from 'react'
 import { ApiError, getCurrentUser, logout, type UserResponse } from '../api/users'
-import { getApplications, getProject, type ApplicationResponse, type ProjectResponse } from '../api/projects'
+import { getApplication, getProject, type ApplicationResponse, type ProjectResponse } from '../api/projects'
 
 type Loaded = {
     // Which URL this result is for, so a slow response for another page can't be shown here
@@ -30,24 +30,15 @@ function Application() {
             });
     }, [navigate]);
 
-    // Load the project (for its name in the navbar) and find this app in the project's list.
-    // There's no backend route for a single app, so the list is searched by name; names are
-    // unique within a project.
+    // Load the project (for its name in the navbar) and this one app, at the same time
     useEffect(() => {
         if (!Number.isInteger(projectId) || !appName) {
             return;
         }
         let ignore = false;
-        Promise.all([getProject(projectId), getApplications(projectId)])
-            .then(([project, applications]) => {
-                if (ignore) return;
-                const application = applications.find((app) => app.name === appName) ?? null;
-                setLoaded({
-                    key,
-                    project,
-                    application,
-                    error: application ? '' : 'Application not found',
-                });
+        Promise.all([getProject(projectId), getApplication(projectId, appName)])
+            .then(([project, application]) => {
+                if (!ignore) setLoaded({ key, project, application, error: '' });
             })
             .catch((err) => {
                 if (ignore) return;
@@ -55,8 +46,9 @@ function Application() {
                     key,
                     project: null,
                     application: null,
-                    // 404 also covers projects that belong to someone else
-                    error: err instanceof ApiError && err.status === 404 ? 'Project not found' : 'Failed to load application',
+                    // The backend's 404 message says which one is missing ("Project not found" or
+                    // "Application not found"); someone else's project also gets a 404
+                    error: err instanceof ApiError && err.status === 404 ? err.message : 'Failed to load application',
                 });
             });
         return () => {

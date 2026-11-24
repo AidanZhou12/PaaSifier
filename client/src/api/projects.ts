@@ -53,3 +53,8 @@ export function createApplication(data: ApplicationCreate, project_id: number): 
 export function getApplications(project_id: number): Promise<ApplicationResponse[]> {
     return request<ApplicationResponse[]>('GET', `/projects/${project_id}/apps`, undefined, 'Failed to fetch applications');
 }
+
+export function getApplication(project_id: number, app_name: string): Promise<ApplicationResponse> {
+    // encodeURIComponent keeps the name safe to put in a URL
+    return request<ApplicationResponse>('GET', `/projects/${project_id}/apps/${encodeURIComponent(app_name)}`, undefined, 'Failed to load application');
+}
