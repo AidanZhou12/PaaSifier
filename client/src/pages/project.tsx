@@ -1,6 +1,6 @@
 import './pages.css'
 import { ApiError, getCurrentUser, logout, type UserResponse } from '../api/users'
-import { deleteProject, getProject, type ProjectResponse, type ApplicationResponse, createApplication, getApplications } from '../api/projects'
+import { deleteProject, getProject, type ProjectResponse, type ApplicationResponse, getApplications } from '../api/projects'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 
@@ -116,7 +116,7 @@ function Project() {
                         {applications.map((application) =>
                         <h3>{application.name}</h3>)}
                     </section>
-                    <button className="create-application-button" type="button" onClick={() => console.log("this does nothing")}>+ New</button>
+                    <button className="create-application-button" type="button" onClick={() => navigate(`/project/${project.id}/create`)}>+ New</button>
                 </>
             )}
             {/* Shown under the heading row, next to the button that caused it */}
