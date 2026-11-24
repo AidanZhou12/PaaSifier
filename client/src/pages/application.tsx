@@ -2,7 +2,7 @@ import './pages.css'
 import { useNavigate, useParams } from 'react-router'
 import { useEffect, useState } from 'react'
 import { ApiError, getCurrentUser, logout, type UserResponse } from '../api/users'
-import { APP_POLL_INTERVAL_MS, getApplication, getProject, isDeploying, type ApplicationResponse, type ProjectResponse } from '../api/projects'
+import { APP_POLL_INTERVAL_MS, deleteApplication, getApplication, getProject, isDeploying, type ApplicationResponse, type ProjectResponse } from '../api/projects'
 
 type Loaded = {
     // Which URL this result is for, so a slow response for another page can't be shown here
@@ -19,6 +19,9 @@ function Application() {
     const key = `${projectId}/${appName}`;
     const [user, setUser] = useState<UserResponse | null>(null);
     const [loaded, setLoaded] = useState<Loaded | null>(null);
+    // True while the delete request is running; drives the button text and disables it
+    const [deleting, setDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -92,9 +95,33 @@ function Application() {
         };
     }, [projectId, appName, key, waitingOnDeploy]);
 
+    async function handleDelete() {
+        if (!project || !application) {
+            return;
+        }
+        setDeleteError('');
+        setDeleting(true);
+        try {
+            await deleteApplication(project.id, application.name);
+            // The project page reloads its app list, so the deleted app won't be in it
+            navigate(`/project/${project.id}`);
+        } catch (err) {
+            setDeleteError(err instanceof ApiError ? err.message : 'Something went wrong');
+        } finally {
+            setDeleting(false);
+        }
+    }
+
     if (!user) {
         return null;
     }
+
+    // Ready and warning apps are running, so their link works; other statuses get no link.
+    // Only http(s) URLs are shown as links, so an unexpected value can't run as a javascript: link.
+    const showLink = application !== null
+        && (application.status === 'ready' || application.status === 'warning')
+        && !!application.endpoint
+        && /^https?:\/\//.test(application.endpoint);
 
     return (
         <main>
@@ -120,8 +147,31 @@ function Application() {
             ) : !application ? (
                 <p>Loading...</p>
             ) : (
-                <h1>{application.name}</h1>
+                <>
+                    {/* App name on the left, delete button on the right, like the project page */}
+                    <div className="project-header">
+                        <h1>{application.name}</h1>
+                        {/* Disabled while a delete is already running */}
+                        <button className="delete-button" onClick={handleDelete} disabled={deleting}>
+                            {deleting ? 'Deleting...' : 'Delete application'}
+                        </button>
+                    </div>
+                    <div className="application-details">
+                        {/* The class sets the colour: green ready, red failed, yellow warning, blue deploying/pending */}
+                        <p className={`app-status app-status-${isDeploying(application.status) ? 'deploying' : application.status}`}>
+                            {application.status}
+                        </p>
+                        {showLink && (
+                            <p>
+                                <a href={application.endpoint!} target="_blank" rel="noopener noreferrer">
+                                    {application.endpoint}
+                                </a>
+                            </p>
+                        )}
+                    </div>
+                </>
             )}
+            {deleteError && <p className="error">{deleteError}</p>}
         </main>
     )
 }

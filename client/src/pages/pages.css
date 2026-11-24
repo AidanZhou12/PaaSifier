@@ -410,3 +410,38 @@ main:has(> .create-app-form) {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* Application page: status and link under the heading, lined up with it */
+.application-details {
+  padding-inline: 24px;
+  text-align: left;
+}
+
+.application-details p {
+  margin: 0 0 8px;
+}
+
+/* Long URLs wrap instead of stretching the page */
+.application-details a {
+  overflow-wrap: anywhere;
+}
+
+.app-status {
+  font-weight: 600;
+}
+
+.app-status-ready {
+  color: #2e7d32;   /* green */
+}
+
+.app-status-failed {
+  color: #d32f2f;   /* red, same as the delete button */
+}
+
+.app-status-warning {
+  color: #b58900;   /* a dark yellow; bright yellow is hard to read on a white background */
+}
+
+.app-status-deploying {
+  color: #1565c0;   /* blue, for deploying and pending */
+}
