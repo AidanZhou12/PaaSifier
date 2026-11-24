@@ -264,3 +264,38 @@
 .error {
   color: #e5484d;
 }
+
+/* Create app page (create.tsx) */
+.create-app-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 32px;
+}
+
+.create-app-form h2 {
+  margin: 16px 0 0;
+}
+
+.create-app-buttons {
+  display: flex;
+  justify-content: space-between;
+  width: 300px;   /* same width as the inputs, so the buttons line up with them */
+  margin-top: 8px;
+}
+
+.create-app-buttons button {
+  padding: 6px 12px;
+  border: 0;
+  background: #000;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.create-app-buttons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
