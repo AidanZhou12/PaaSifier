@@ -130,7 +130,7 @@ function Project() {
                                             become links, so an unexpected value can't run as a javascript: link. */}
                                         {application.endpoint && /^https?:\/\//.test(application.endpoint) && (
                                             <a href={application.endpoint} target="_blank" rel="noopener noreferrer">
-                                                {application.endpoint}
+                                                Open URL
                                             </a>
                                         )}
                                     </td>

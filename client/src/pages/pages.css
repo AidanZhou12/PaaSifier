@@ -355,7 +355,18 @@ main:has(> .create-app-form) {
   font-weight: 600;
 }
 
-/* Long URLs wrap instead of stretching the table off the page */
-.application-table td a {
+.application-table :is(th, td):first-child {
+  padding-inline-start: 0;
   overflow-wrap: anywhere;
+}
+
+.application-table :is(th, td):not(:first-child) {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.application-table :is(th, td):last-child {
+  padding-inline-end: 0;
+  padding-inline-start: 68px;
+  text-align: left;
 }
