@@ -2,7 +2,7 @@ import './pages.css'
 import { useNavigate, useParams } from 'react-router'
 import { useEffect, useState } from 'react'
 import { ApiError, getCurrentUser, logout, type UserResponse } from '../api/users'
-import { getApplication, getProject, type ApplicationResponse, type ProjectResponse } from '../api/projects'
+import { APP_POLL_INTERVAL_MS, getApplication, getProject, isDeploying, type ApplicationResponse, type ProjectResponse } from '../api/projects'
 
 type Loaded = {
     // Which URL this result is for, so a slow response for another page can't be shown here
@@ -61,6 +61,36 @@ function Application() {
     const project = current?.project ?? null;
     const application = current?.application ?? null;
     const error = Number.isInteger(projectId) && appName ? (current?.error ?? '') : 'Application not found';
+    const waitingOnDeploy = application !== null && isDeploying(application.status);
+
+    // While the app is deploying or pending, fetch it again every few seconds (the backend asks
+    // IBM for fresh data in that case), so its status and link update without a page refresh.
+    // Stops on its own once the app settles. Same approach as the app table in project.tsx.
+    useEffect(() => {
+        if (!waitingOnDeploy || !appName) {
+            return;
+        }
+        let stopped = false;
+        let timer: ReturnType<typeof setTimeout>;
+        // setTimeout after each response (instead of setInterval) so requests never overlap
+        const scheduleNext = () => {
+            timer = setTimeout(async () => {
+                try {
+                    const app = await getApplication(projectId, appName);
+                    // Only update if this page is still showing the same app; keep the loaded project
+                    if (!stopped) setLoaded((prev) => (prev && prev.key === key ? { ...prev, application: app } : prev));
+                } catch {
+                    // A failed check keeps what's on screen; the next check tries again
+                }
+                if (!stopped) scheduleNext();
+            }, APP_POLL_INTERVAL_MS);
+        };
+        scheduleNext();
+        return () => {
+            stopped = true;
+            clearTimeout(timer);
+        };
+    }, [projectId, appName, key, waitingOnDeploy]);
 
     if (!user) {
         return null;

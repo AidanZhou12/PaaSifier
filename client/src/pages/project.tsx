@@ -1,16 +1,8 @@
 import './pages.css'
 import { ApiError, getCurrentUser, logout, type UserResponse } from '../api/users'
-import { deleteProject, getProject, type ProjectResponse, type ApplicationResponse, getApplications } from '../api/projects'
+import { APP_POLL_INTERVAL_MS, deleteProject, getProject, type ProjectResponse, type ApplicationResponse, getApplications, isDeploying } from '../api/projects'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
-
-// How often to check on deploying apps
-const POLL_INTERVAL_MS = 5000;
-
-// Apps in these statuses aren't running yet: their link isn't usable, and the page keeps checking on them
-function isDeploying(status: string): boolean {
-    return status === 'deploying' || status === 'pending';
-}
 
 function Project() {
     // "7" from /project/7. URL parameters are always strings, so convert it.
@@ -83,7 +75,7 @@ function Project() {
                     // A failed check keeps the list on screen; the next check tries again
                 }
                 if (!stopped) scheduleNext();
-            }, POLL_INTERVAL_MS);
+            }, APP_POLL_INTERVAL_MS);
         };
         scheduleNext();
         return () => {

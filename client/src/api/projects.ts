@@ -58,3 +58,16 @@ export function getApplication(project_id: number, app_name: string): Promise<Ap
     // encodeURIComponent keeps the name safe to put in a URL
     return request<ApplicationResponse>('GET', `/projects/${project_id}/apps/${encodeURIComponent(app_name)}`, undefined, 'Failed to load application');
 }
+
+export function deleteApplication(project_id: number, app_name: string): Promise<void> {
+    return request<void>('DELETE', `/projects/${project_id}/apps/${encodeURIComponent(app_name)}`, undefined, 'Failed to delete application');
+}
+
+// How often pages check on apps that are still deploying
+export const APP_POLL_INTERVAL_MS = 5000;
+
+// Apps in these statuses aren't running yet: their link isn't usable, and pages keep checking on them.
+// Matches APP_DEPLOYING_STATUSES in backend/routers/projects.py, where the backend asks IBM for fresh data.
+export function isDeploying(status: string): boolean {
+    return status === 'deploying' || status === 'pending';
+}
