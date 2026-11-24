@@ -183,7 +183,15 @@ function Project() {
                         <tbody>
                             {applications.map((application) => (
                                 <tr key={application.id}>
-                                    <td>{application.name}</td>
+                                    <td>
+                                        <button
+                                            className="application-name-button"
+                                            type="button"
+                                            onClick={() => navigate(`/project/${project.id}/apps/${encodeURIComponent(application.name)}`)}
+                                        >
+                                            {application.name}
+                                        </button>
+                                    </td>
                                     <td>{application.status}</td>
                                     <td>
                                         {/* Only ready apps get a link: while deploying or pending the URL doesn't work
