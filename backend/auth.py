@@ -31,7 +31,11 @@ REFRESH_TOKEN_REUSE_GRACE_SECONDS = 10
 REFRESH_COOKIE_NAME = "refresh_token"
 # Only sent to /users/... routes (refresh and logout), not to every API call
 REFRESH_COOKIE_PATH = "/users"
-# Browsers accept Secure cookies on http://localhost; set COOKIE_SECURE=false only if yours doesn't
+# SameSite=None lets the browser send the refresh cookie when the frontend and API are on different
+# sites (e.g. separate IBM Code Engine domains). Browsers only accept SameSite=None cookies that are
+# also Secure, so keep COOKIE_SECURE on for any browser use (http://localhost counts as secure in
+# Chrome and Firefox). COOKIE_SECURE=false is only for test clients that use plain HTTP.
+COOKIE_SAMESITE = "none"
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "true").lower() != "false"
 
 # auto_error=False so a missing header returns our own 401 instead of FastAPI's default
@@ -174,7 +178,7 @@ def set_refresh_cookie(response: Response, token: str) -> None:
         path=REFRESH_COOKIE_PATH,
         httponly=True,
         secure=COOKIE_SECURE,
-        samesite="strict",
+        samesite=COOKIE_SAMESITE,
     )
 
 
@@ -184,5 +188,5 @@ def clear_refresh_cookie(response: Response) -> None:
         path=REFRESH_COOKIE_PATH,
         httponly=True,
         secure=COOKIE_SECURE,
-        samesite="strict",
+        samesite=COOKIE_SAMESITE,
     )

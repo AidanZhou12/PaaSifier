@@ -40,7 +40,7 @@ There is no test suite. Ad-hoc backend checks use FastAPI's `TestClient` against
 
 `backend/.env` (git-ignored, loaded by compose via `env_file` and by `load_dotenv()` in code): `DATABASE_URL`, `JWT_SECRET`, `IBM_CLOUD_API_KEY`, `IBM_CLOUD_API_URL` (Code Engine v2 base URL, e.g. `https://api.us-south.codeengine.cloud.ibm.com/v2`), `IBM_CLOUD_RESOURCE_GROUP_ID` (optional). Optional: `CORS_ORIGINS` (comma-separated, defaults to `http://localhost:5173`), `COOKIE_SECURE` (defaults true).
 
-Inside Docker, compose overrides `DATABASE_URL` to use host `db`. `client/.env` has `VITE_API_URL=http://localhost:8000`; it must stay `localhost` (not `127.0.0.1` or `backend`), because the browser calls the API and the refresh cookie is `SameSite=Strict`.
+Inside Docker, compose overrides `DATABASE_URL` to use host `db`. `client/.env` has `VITE_API_URL=http://localhost:8000`; it must stay `localhost` (not `127.0.0.1` or `backend`), because the browser calls the API and the refresh cookie is `Secure` (browsers only treat `http://localhost` as a secure context). The refresh cookie is `SameSite=None` so it works when the frontend and API are on different sites; `None` cookies are rejected by browsers unless they're also `Secure`.
 
 ## Backend architecture
 

@@ -37,7 +37,10 @@ services:
         condition: service_healthy
 
   client:
-    build: ./client
+    build:
+      context: ./client
+      # The Vite dev server stage; the Dockerfile's production stage (nginx) is only for deployments
+      target: dev
     container_name: psfr-client
     environment:
       # The browser (on your machine) calls the API, so this stays localhost, not "backend"
